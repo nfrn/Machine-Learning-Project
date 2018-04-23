@@ -199,6 +199,13 @@ class Board:
         return self.rows == other.rows and self.columns == other.columns \
                and self.get_chains() == other.get_chains()
 
+    def copy_board(self):
+        board = Board(self.rows, self.columns, self.chains)
+        board.free_edges = self.free_edges
+        board.player = self.player
+        board.last_move = self.last_move
+        return board
+
     def get_rows(self): return self.rows
 
     def get_columns(self): return self.columns
@@ -269,6 +276,9 @@ class Board:
         return found_chains
 
     def is_finished(self):
-        return len(self.free_edges)
+        if len(self.free_edges)==0:
+            return True
+        else:
+            return False
 
 

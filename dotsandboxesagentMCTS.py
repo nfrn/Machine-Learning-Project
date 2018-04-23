@@ -52,7 +52,7 @@ class DotsAndBoxesAgent:
         self.ended = False
         self.nb_rows = nb_rows
         self.nb_cols = nb_cols
-        self.mcst = MCST(Board(nb_rows, nb_cols,set()))
+        self.mcst = MCST(Board(nb_rows, nb_cols, set()), 3)
 
     def add_player(self, player):
         """Use the same agent for multiple players."""
@@ -66,7 +66,7 @@ class DotsAndBoxesAgent:
         :param orientation: "v" or "h"
         :param player: 1 or 2
         """
-        self.board.add_edge( Edge(Node(row, column), orientation))
+        self.mcst.tree.getRoot().getBoard().add_edge( Edge(Node(row, column), orientation))
 
     def next_action(self):
         """Return the next action this agent wants to perform.
@@ -79,7 +79,7 @@ class DotsAndBoxesAgent:
         logger.info("Computing next move (grid={}x{}, player={})"\
                 .format(self.nb_rows, self.nb_cols, self.player))
 
-        free_edges = self.board.get_free_edges()
+        free_edges = self.mcst.tree.getRoot().getBoard().get_free_edges()
         if len(free_edges) == 0:
             # Board full
             return None
