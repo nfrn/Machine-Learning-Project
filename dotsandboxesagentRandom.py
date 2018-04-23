@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 games = {}
 agentclass = None
 
-
 class DotsAndBoxesAgent:
     """Example Dots and Boxes agent implementation base class.
     It returns a random next move.

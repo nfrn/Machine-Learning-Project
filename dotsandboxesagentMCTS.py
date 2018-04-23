@@ -52,7 +52,7 @@ class DotsAndBoxesAgent:
         self.ended = False
         self.nb_rows = nb_rows
         self.nb_cols = nb_cols
-        self.mcst = MCST(Board(nb_rows, nb_cols, set()), 3)
+        self.mcst = MCST(Board(nb_rows, nb_cols, set()), 2)
 
     def add_player(self, player):
         """Use the same agent for multiple players."""

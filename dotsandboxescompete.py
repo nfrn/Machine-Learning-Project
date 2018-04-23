@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 def start_competition(address1, address2, nb_rows, nb_cols, timelimit):
-   asyncio.get_event_loop().run_until_complete(connect_agent(address1, address2, nb_rows, nb_cols, timelimit))
+    asyncio.get_event_loop().run_until_complete(connect_agent(address1, address2, nb_rows, nb_cols, timelimit))
 
 
 async def connect_agent(uri1, uri2, nb_rows, nb_cols, timelimit):

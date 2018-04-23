@@ -66,11 +66,14 @@ class State:
     def is_explored(self):
         return self.explored
 
+    def is_root(self):
+        return self.parent is None
+
 
 class MCST:
     def __init__(self, board, time_limit):
 
-        root_state = State(board, 0)
+        root_state = State(board, None)
         self.tree = Tree(root_state)
         self.time_limit = time_limit
         self.totalplays = 0
@@ -85,7 +88,8 @@ class MCST:
 
         while time.time() - begin_time < self.time_limit:
             next_state = self.get_most_promissing_state(rootState)
-            if next_state.getBoard().is_finished() != 0:
+            # if next_state.getBoard().is_finished() != 0:
+            if not next_state.getBoard().is_finished():
                 self.expand_state(next_state)
                 print("State expanded!")
 
@@ -95,12 +99,15 @@ class MCST:
                 random_child_state = choice(next_state_childs)
                 sim_state = self.simulate_random_game(random_child_state)
                 result = self.state_is_finished(sim_state)
+
                 if result != -1:
+                    # TODO what if the result is 0 and you have lost?
                     self.backpropagatewin(sim_state, result)
             else:
                 sim_state = self.simulate_random_game(next_state)
                 result = self.state_is_finished(sim_state)
                 if result != -1:
+                    # TODO what if the result is 0 and you have lost?
                     self.backpropagatewin(sim_state, result)
 
             searched_games += 1
@@ -149,7 +156,7 @@ class MCST:
     def simulate_random_game(self, state):
         current_state = state
 
-        while state.getBoard().is_finished():
+        while not current_state.getBoard().is_finished():
             current_board = current_state.getBoard()
             possible_moves = current_board.get_free_edges()
             chosen_move = choice(list(possible_moves))
@@ -168,7 +175,7 @@ class MCST:
         current_board = state.getBoard()
         if current_board.is_finished():
             rows = current_board.get_rows()
-            cols = current_board.get_cols()
+            cols = current_board.get_columns()
             half_possible_moves = float((rows + 1) * cols) + (rows * (cols + 1)) / 2
             states_played = self.backpropagate_get_winner(state)
             winner = 0
@@ -209,13 +216,14 @@ class MCST:
         if state.getBoard().get_player == winner:
             state.inc_wins()
 
-        if state.getParent != 0:
-            self.backprogratewin(state.getParent(), winner)
+        if not state.getParent().is_root():
+            self.backpropagatewin(state.getParent(), winner)
 
     def backpropagate_get_winner(self, state):
+        if state.is_root():
+            return 0
 
-        if state.getParent != 0:
-
+        else:
             if state.getBoard().get_player() == 1:
                 return 1 + self.backpropagate_get_winner(state.getParent())
 

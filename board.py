@@ -276,9 +276,6 @@ class Board:
         return found_chains
 
     def is_finished(self):
-        if len(self.free_edges)==0:
-            return True
-        else:
-            return False
+        return len(self.free_edges) == 0
 
 
