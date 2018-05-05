@@ -5,6 +5,7 @@ import sys
 import math
 from random import choice
 from board import hashable
+from board import Board
 
 
 class Mcst:
@@ -20,7 +21,14 @@ class Mcst:
         self.wins = {}    # (PLAYER, hash(STATE))
         self.plays = {}   # (PLAYER, hash(STATE))
 
+    def clear(self):
+        self.board = Board(self.board.rows, self.board.cols)
+        self.last_state = (1, self.board.init_representation())
+        self.next_states = []  # (MOVE, STATE)
+        self.visited_states = []  # (MOVE, STATE)
+
     def search_move(self):
+        print("Dictionary reset: " + str(len(self.plays) == 0))
         begin_time = time.time()
         simulated_games = 0
 
@@ -33,6 +41,7 @@ class Mcst:
         player1 = self.board.current_player(current_state[1])
 
         if possible_moves.shape[0] == 0:
+            print("No possible moves.")
             return -1
 
         while time.time() - begin_time < self.time_limit:
@@ -50,8 +59,8 @@ class Mcst:
         next_states = []
         moves = self.board.legal_plays(current_state)
         for move in moves:
-            new_state, move_done = self.board.next_state(current_state, move)
-            next_states.append((move_done, new_state))
+            new_state = self.board.next_state(current_state, move)
+            next_states.append((move, new_state))
 
             player = self.board.current_player(new_state)
             hash_state = hashable(new_state)
@@ -115,6 +124,7 @@ class Mcst:
     def uct_selection(self, states):
 
         list_not_played = []
+        # TODO niet uitvoeren als alle next states al gevisit zijn.
         for move, state in states:
             if self.plays[(self.board.current_player(state), hashable(state))] == 0:
                 list_not_played.append((state,move))

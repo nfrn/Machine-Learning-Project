@@ -14,6 +14,7 @@ import logging
 import asyncio
 import websockets
 import json
+
 from board import Board
 from mcst import Mcst
 
@@ -50,7 +51,10 @@ class DotsAndBoxesAgent:
         self.ended = False
         self.nb_rows = nb_rows
         self.nb_cols = nb_cols
-        self.mcst = Mcst(Board(nb_rows, nb_cols), timelimit)
+        # self.mcst = Mcst(Board(nb_rows, nb_cols), timelimit)
+        self.mcst = MCTS
+        MCTS.clear()
+        print("NEW AGENT INITIALIZED")
 
     def add_player(self, player):
         """Use the same agent for multiple players."""
@@ -189,6 +193,8 @@ def main(argv=None):
     logger.addHandler(logging.StreamHandler(sys.stdout))
 
     agentclass = DotsAndBoxesAgent
+    global MCTS
+    MCTS = Mcst(Board(3, 3), 0.5)
     start_server(args.port)
 
 

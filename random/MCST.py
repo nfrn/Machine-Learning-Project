@@ -90,7 +90,7 @@ class MCST:
             # if next_state.getBoard().is_finished() != 0:
             if not next_state.getBoard().is_finished():
                 self.expand_state(next_state)
-                print("State expanded!")
+                # print("State expanded!")
 
             next_state_childs = next_state.getChilds()
 
@@ -113,7 +113,7 @@ class MCST:
             searched_games += 1
 
         print("Searched: " + str(searched_games) + "games.")
-        print("Timed elapsed: " + str(time.time() - begin_time))
+        # print("Timed elapsed: " + str(time.time() - begin_time))
 
         best_move, best_state = self.get_current_best_move()
 
@@ -124,7 +124,7 @@ class MCST:
     def get_most_promissing_state(self, state):
 
         if len(state.getChilds()) == 0:
-            print("FINAL: Picked state with move " + str(state.getBoard().get_last_move()))
+            # print("FINAL: Picked state with move " + str(state.getBoard().get_last_move()))
             return state
 
         else:
@@ -143,7 +143,7 @@ class MCST:
                 value = value2
                 best_state = state
 
-        print("Picked uct move " + str(best_state.getBoard().get_last_move()) + " with uct value of " + str(value))
+        # print("Picked uct move " + str(best_state.getBoard().get_last_move()) + " with uct value of " + str(value))
 
         return best_state
 
@@ -200,9 +200,11 @@ class MCST:
         win_per = 0
         best_state = next_states[0]
         for state in next_states:
-            if state.getwins()> 0 and state.getplays()>0:
+            if state.getwins() > 0 and state.getplays() > 0:
+                print("Found state with wins.")
                 win_per2 = max(float(state.getwins()) / state.getplays())
                 if win_per2 > win_per:
+                    print("Found best move.")
                     best_state = state
                     win_per = win_per2
         best_move = best_state.getBoard().get_last_move()

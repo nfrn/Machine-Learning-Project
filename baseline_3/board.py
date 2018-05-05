@@ -36,9 +36,10 @@ class hashable(object):
 
         return self.__wrapped
 
+
 class Board:
 
-    def __init__(self,rows,cols):
+    def __init__(self, rows, cols):
         self.rows = rows
         self.cols = cols
 
@@ -55,15 +56,15 @@ class Board:
     def next_state(self, state, move):
         new_state = np.copy(state)
         currentplayer = state.item(0)
-        row,cols,ori = self.translate_to_coord(move)
+        row, col, ori = self.translate_to_coord(move)
         new_state[move] = currentplayer
 
-        if self.is_box(new_state, row, cols, ori, currentplayer):
+        if self.is_box(new_state, row, col, ori):
             new_state[0] = currentplayer
         else:
             new_state[0] = self.update_player(currentplayer)
 
-        return new_state, move
+        return new_state
 
     def legal_plays(self, state):
         plays = np.where(state == 0)[0]
@@ -81,7 +82,7 @@ class Board:
         move = self.translate_to_move(row, cols, ori)
         new_state[move] = player
 
-        if self.is_box(new_state, row, cols, ori, player):
+        if self.is_box(new_state, row, cols, ori):
             new_state[0] = player
         else:
             new_state[0] = self.update_player(player)
@@ -101,7 +102,6 @@ class Board:
         return move
 
     def translate_to_coord(self, move):
-
         move2 = move - 1
 
         rows = move2 // (self.cols * 2 + 1)
@@ -118,36 +118,23 @@ class Board:
             return rows, cols, "v"
 
     def update_player(self, player):
-        new_player = (player + 1) % 2
-        if new_player == 0:
-            new_player = 2
-        return new_player
+        return 2*player % 3
 
-    def is_box(self, new_state, row, cols, ori, player):
+    def is_box(self, new_state, row, col, ori):
+        move = self.translate_to_move(row, col, ori)
+        cols = self.cols
         if ori == "h":
             if row < self.rows:
-                box1_a = new_state.item(self.translate_to_move(row, cols, "v"))
-                box1_b = new_state.item(self.translate_to_move(row, cols + 1, "v"))
-                box1_c = new_state.item(self.translate_to_move(row + 1, cols, ori))
-                if box1_a == box1_b == box1_c == player:
+                if new_state.item(move + cols) > 0 and new_state.item(move + cols + 1) > 0 and new_state.item(move + (2 * cols) + 1) > 0:
                     return True
             if row > 1:
-                box2_a = new_state.item(self.translate_to_move(row - 1, cols, "v"))
-                box2_b = new_state.item(self.translate_to_move(row - 1, cols + 1, "v"))
-                box2_c = new_state.item(self.translate_to_move(row - 1, cols, ori))
-                if box2_a == box2_b == box2_c == player:
+                if new_state.item(move - cols) > 0 and new_state.item(move - cols - 1) > 0 and new_state.item(move - (2 * cols) - 1) > 0:
                     return True
         elif ori == "v":
-            if cols > 1:
-                box1_a = new_state.item(self.translate_to_move(row, cols - 1, "h"))
-                box1_b = new_state.item(self.translate_to_move(row + 1, cols - 1, "h"))
-                box1_c = new_state.item(self.translate_to_move(row, cols - 1, ori))
-                if box1_a == box1_b == box1_c == player:
+            if col < self.cols:
+                if new_state.item(move + 1) > 0 and new_state.item(move - cols) > 0 and new_state.item(move + cols + 1) > 0:
                     return True
-            if cols < self.cols:
-                box2_a = new_state.item(self.translate_to_move(row, cols, "h"))
-                box2_b = new_state.item(self.translate_to_move(row + 1, cols, "h"))
-                box2_c = new_state.item(self.translate_to_move(row, cols + 1, ori))
-                if box2_a == box2_b == box2_c == player:
+            if col > 1:
+                if new_state.item(move - 1) > 0 and new_state.item(move + cols) > 0 and new_state.item(move - cols - 1) > 0:
                     return True
         return False

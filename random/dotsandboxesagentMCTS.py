@@ -50,7 +50,7 @@ class DotsAndBoxesAgent:
         self.ended = False
         self.nb_rows = nb_rows
         self.nb_cols = nb_cols
-        self.mcst = MCST(Board(nb_rows, nb_cols, set()), 2)
+        self.mcst = MCST(Board(nb_rows, nb_cols, set()), 1)
 
     def add_player(self, player):
         """Use the same agent for multiple players."""
@@ -79,6 +79,7 @@ class DotsAndBoxesAgent:
 
         free_edges = self.mcst.tree.getRoot().getBoard().get_free_edges()
         if len(free_edges) == 0:
+            print("Board full")
             # Board full
             return None
 
