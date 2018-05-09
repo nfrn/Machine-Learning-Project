@@ -166,54 +166,57 @@ def expand_chains(chains,rows,cols,state):
 
 
 def merge_chains(chains, rows,cols,state):
-    for pair_chain in itertools.combinations([chains], 2):
-        print(pair_chain)
-        last_square0 = pair_chain[0][-1]
-        last_square_number0 = last_square0[0]
-        last_square_cuts0 = last_square0[1]
+    for chain in chains:
+        for chain2 in chains:
+            if chain[0] != chain2[0] and chain[1] != chain2[0] and chain[0] != chain2[1] and chain[1] != chain2[1]:
+                pair_chain = [chain,chain2]
+                #print(pair_chain)
+                last_square0 = pair_chain[0][-1]
+                last_square_number0 = last_square0[0]
+                last_square_cuts0 = last_square0[1]
 
-        neighbors0 = get_neighbors(last_square_number0, rows, cols)
+                neighbors0 = get_neighbors(last_square_number0, rows, cols)
 
-        for ori, box in neighbors0:
-            for square, cuts in pair_chain[0]:
-                if square == box:
-                    neighbors0.remove([ori, box])
-                    break
+                for ori, box in neighbors0:
+                    for square, cuts in pair_chain[0]:
+                        if square == box:
+                            neighbors0.remove([ori, box])
+                            break
 
-        last_square1 = pair_chain[1][-1]
-        last_square_number1 = last_square1[0]
-        last_square_cuts1 = last_square1[1]
+                last_square1 = pair_chain[1][-1]
+                last_square_number1 = last_square1[0]
+                last_square_cuts1 = last_square1[1]
 
-        neighbors1 = get_neighbors(last_square_number1, rows, cols)
+                neighbors1 = get_neighbors(last_square_number1, rows, cols)
 
-        for ori, box in neighbors1:
-            for square, cuts in pair_chain[1]:
-                if square == box:
-                    neighbors1.remove([ori, box])
-                    break
+                for ori, box in neighbors1:
+                    for square, cuts in pair_chain[1]:
+                        if square == box:
+                            neighbors1.remove([ori, box])
+                            break
 
-        for neighbor0 in neighbors0:
-            for neighbor1 in neighbors1:
-                if neighbor0[1]==neighbor1[1]:
-                    neighbor_values = get_square_values(neighbor0[1], cols, state)[0]
-                    numberofcuts = sum(neighbor_values)
-                    if numberofcuts == 2:
-                        box0, nei0 = convert_neighbor(neighbor0[0])
-                        box1, nei1 = convert_neighbor(neighbor1[0])
+                for neighbor0 in neighbors0:
+                    for neighbor1 in neighbors1:
+                        if neighbor0[1]==neighbor1[1]:
+                            neighbor_values = get_square_values(neighbor0[1], cols, state)[0]
+                            numberofcuts = sum(neighbor_values)
+                            if numberofcuts == 2:
+                                box0, nei0 = convert_neighbor(neighbor0[0])
+                                box1, nei1 = convert_neighbor(neighbor1[0])
 
-                        if (last_square_cuts0[box1]==neighbor_values[nei0]==False) and \
-                            (last_square_cuts1[box0]==neighbor_values[nei1]==False):
-                            "chains remove A and B"
-                            chains.remove(pair_chain[0])
-                            chains.remove(pair_chain[1])
-                            "chains add A+B"
-                            merged = pair_chain[0] + pair_chain[1] + [[neighbor0[1], neighbor_values]]
-                            print(pair_chain[0])
-                            print(pair_chain[1])
-                            #print(merged)
-                            chains.append(merged)
+                                if (last_square_cuts0[box1]==neighbor_values[nei0]==False) and \
+                                    (last_square_cuts1[box0]==neighbor_values[nei1]==False):
+                                    "chains remove A and B"
+                                    chains.remove(pair_chain[0])
+                                    chains.remove(pair_chain[1])
+                                    "chains add A+B"
+                                    merged = pair_chain[0] + pair_chain[1] + [[neighbor0[1], neighbor_values]]
+                                    #print(pair_chain[0])
+                                    #print(pair_chain[1])
+                                    #print("merged")
+                                    chains.append(merged)
 
-                            #print("merged")
+                                    #print("merged")
 
 
 
@@ -266,7 +269,7 @@ def generator():
                 #print(4)
                 number_of_chains, average, max_size_chain = get_features(rows, cols, state[1:])
                 #print(5)
-                print(str(number_of_chains)+ ":" +  str(average) + ":" + str(max_size_chain))
+                #print(str(number_of_chains)+ ":" +  str(average) + ":" + str(max_size_chain))
                 writer.writerow([convert_state(state[1:]), rows, cols, number_of_chains,average,max_size_chain])
                 #print(6)
     csvfile.close()
