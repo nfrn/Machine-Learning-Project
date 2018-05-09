@@ -20,8 +20,12 @@ def test_win_rate(rows, columns, timelimit, nb_games):
     nb_games = stats.shape[0]
     nb_wins = stats[stats["winner"] == 1].shape[0]
     nb_draws = stats[stats["winner"] == 0].shape[0]
+
+    winrate = nb_wins/nb_games * 100
+    drawrate = nb_draws/nb_games * 100
     print("Win rate for agent 1: " + str(nb_wins/nb_games * 100) + "%.")
     print("Draw rate: " + str(nb_draws/nb_games * 100) + "%.")
+    return winrate, drawrate
 
 
 def main(argv=None):

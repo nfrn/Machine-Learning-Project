@@ -4,8 +4,8 @@ import collections
 import sys
 import math
 from random import choice
-from board import hashable
-from board import Board
+from baseline_3.board import hashable
+from baseline_3.board import Board
 from sklearn.externals import joblib
 
 MAX_PREDICTOR_FILENAME = "Models/chain_count.sav"

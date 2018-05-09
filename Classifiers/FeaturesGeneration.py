@@ -148,13 +148,34 @@ def expand_chains(chains,rows,cols,state):
     return chains, expand
 
 
-def convert_state(state):
+def convert_state(state, rows, cols):
     number = 0
     for x in range(len(state)):
         if state[x] == 0:
             continue
-        number += x*10
+        row, col, ori = translate_to_coord(rows, cols, x+1)
+        if row < 0 or col < 0:
+            print("Row " + str(row))
+            print("Col " + str(col))
+        number += row*col
     return number
+
+
+def translate_to_coord(rows, cols, move):
+    move2 = move - 1
+
+    row = move2 // (cols * 2 + 1)
+    col = move2 % (cols * 2 + 1)
+
+    # move = 2 + (row * (self.cols * 2 + 1)) + cols
+    # move = 2 + (row * (self.cols * 2 + 1)) + cols + self.cols
+
+    if col < cols:
+        return row, col, "h"
+
+    else:
+        col -= cols
+        return row, col, "v"
 
 def get_features(rows, cols, state):
     chains = create_chains(rows,cols,state)
@@ -194,7 +215,7 @@ def generator():
                 #print(4)
                 max_size_chain, number_of_chains, avg = get_features(rows, cols, state[1:])
                 #print(5)
-                writer.writerow([convert_state(state[1:]), rows, cols, max_size_chain, number_of_chains, avg])
+                writer.writerow([convert_state(state[1:],rows,cols), rows, cols, number_of_chains, avg, max_size_chain])
                 #print(6)
     csvfile.close()
 

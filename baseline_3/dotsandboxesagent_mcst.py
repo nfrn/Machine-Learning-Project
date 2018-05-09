@@ -15,8 +15,8 @@ import asyncio
 import websockets
 import json
 
-from board import Board
-from mcst import Mcst
+from baseline_3.board import Board
+from baseline_3.mcst import Mcst
 
 
 logger = logging.getLogger(__name__)
@@ -185,10 +185,12 @@ def main(argv=None):
     parser.add_argument('--verbose', '-v', action='count', default=0, help='Verbose output')
     parser.add_argument('--quiet', '-q', action='count', default=0, help='Quiet output')
     parser.add_argument('port', metavar='PORT', type=int, help='Port to use for server')
+    parser.add_argument('--weights', '-w', nargs=3, type=float, default=[1, 1, 1], help='Weights for mcts evaluation function.')
     args = parser.parse_args(argv)
 
     logger.setLevel(max(logging.INFO - 10 * (args.verbose - args.quiet), logging.DEBUG))
     logger.addHandler(logging.StreamHandler(sys.stdout))
+    print("Running agent with weights: " + str(args.weights))
 
     agentclass = DotsAndBoxesAgent
     start_server(args.port)

@@ -25,10 +25,10 @@ if __name__ == "__main__":
     columns = games.columns.tolist()
 
 
-    columns_1 = [c for c in columns if c not in [3,4]]
+    columns_1 = [c for c in columns if c not in [3,4,5]]
 
     # Store the variable we'll be predicting on.
-    target = 4
+    target = 3
 
     #model = LinearRegression()
     model1 = RandomForestRegressor(n_estimators=400, min_samples_leaf=2, random_state=1)
@@ -39,13 +39,13 @@ if __name__ == "__main__":
     # model1.in
     print(test[columns_1].shape)
     print(mean_squared_error(predictions, test[target]))
-    filename = 'features_classifier_1.sav'
+    filename = 'nb_chains_classifier.sav'
     joblib.dump(model1, filename)
 
-    columns_1 = [c for c in columns if c not in [3]]
+    columns_1 = [c for c in columns if c not in [4,5]]
 
     # Store the variable we'll be predicting on.
-    target = 3
+    target = 4
 
     #model2 = LinearRegression()
     model2 = RandomForestRegressor(n_estimators=400, min_samples_leaf=2, random_state=1)
@@ -55,7 +55,23 @@ if __name__ == "__main__":
     predictions = model2.predict(test[columns_1])
     print(test[columns_1].shape)
     print(mean_squared_error(predictions, test[target]))
-    filename = 'features_classifier_2.sav'
+    filename = 'avg_chain_length_classifier.sav'
+    joblib.dump(model2, filename)
+
+    columns_1 = [c for c in columns if c not in [5]]
+
+    # Store the variable we'll be predicting on.
+    target = 5
+
+    # model2 = LinearRegression()
+    model2 = RandomForestRegressor(n_estimators=400, min_samples_leaf=2, random_state=1)
+    # model2 = SVR()
+
+    model2.fit(train[columns_1], train[target])
+    predictions = model2.predict(test[columns_1])
+    print(test[columns_1].shape)
+    print(mean_squared_error(predictions, test[target]))
+    filename = 'max_chain_length_classifier.sav'
     joblib.dump(model2, filename)
 
 
