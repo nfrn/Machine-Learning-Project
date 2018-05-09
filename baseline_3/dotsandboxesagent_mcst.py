@@ -87,6 +87,7 @@ class DotsAndBoxesAgent:
 
     def end_game(self):
         self.ended = True
+        self.mcst=None
 
 
 ## MAIN EVENT LOOP
