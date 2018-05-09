@@ -151,7 +151,9 @@ def expand_chains(chains,rows,cols,state):
 def convert_state(state):
     number = 0
     for x in range(len(state)):
-        number += x*10 * state[x]
+        if state[x] == 0:
+            continue
+        number += x*10
     return number
 
 def get_features(rows, cols, state):
@@ -163,10 +165,11 @@ def get_features(rows, cols, state):
         newchains,expand = expand_chains(chains,rows,cols,state)
         count+=1
         chains = newchains[:]
-    if len(chains)==0:
-        return 0,0
-    value = max(len(chain) for chain in chains)
-    return len(chains), value
+    if len(chains) == 0:
+        return 0,0,0
+    max_length = max(len(chain) for chain in chains)
+    avg = sum(len(chain) for chain in chains)/len(chains)
+    return len(chains), max_length, avg
 
 def generator():
     with open(FILENAME, 'w', newline='') as csvfile:
@@ -189,9 +192,9 @@ def generator():
                 #print(3)
                 state = new_state[:]
                 #print(4)
-                max_size_chain, number_of_chains = get_features(rows, cols, state[1:])
+                max_size_chain, number_of_chains, avg = get_features(rows, cols, state[1:])
                 #print(5)
-                writer.writerow([convert_state(state[1:]), rows, cols, max_size_chain, number_of_chains])
+                writer.writerow([convert_state(state[1:]), rows, cols, max_size_chain, number_of_chains, avg])
                 #print(6)
     csvfile.close()
 

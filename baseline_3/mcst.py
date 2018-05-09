@@ -34,7 +34,6 @@ class Mcst:
         self.visited_states = []  # (MOVE, STATE)
 
     def search_move(self):
-        print("Dictionary reset: " + str(len(self.plays) == 0))
         begin_time = time.time()
         simulated_games = 0
 
@@ -47,7 +46,6 @@ class Mcst:
         player1 = self.board.current_player(current_state[1])
 
         if possible_moves.shape[0] == 0:
-            print("No possible moves.")
             return -1
 
         while time.time() - begin_time < self.time_limit:
@@ -158,6 +156,8 @@ class Mcst:
 def convert_state(state):
     number = 0
     for x in range(len(state)):
-        number += x*10 * state[x]
+        if state[x] == 0:
+            continue
+        number += x*10
     return number
 

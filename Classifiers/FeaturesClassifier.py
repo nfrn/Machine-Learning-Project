@@ -14,7 +14,7 @@ from sklearn.externals import joblib
 
 # Data =
 if __name__ == "__main__":
-    games = pandas.read_csv("stateToFeatures.csv", header=None, delimiter=",")
+    games = pandas.read_csv("stateToFeatures2.csv", header=None, delimiter=",")
 
     train = games.sample(frac=0.8, random_state=1)
     test = games.loc[~games.index.isin(train.index)]
@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     model1.fit(train[columns_1], train[target])
     predictions = model1.predict(test[columns_1])
-    model1.in
+    # model1.in
     print(test[columns_1].shape)
     print(mean_squared_error(predictions, test[target]))
     filename = 'features_classifier_1.sav'

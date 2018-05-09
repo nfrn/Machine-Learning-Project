@@ -12,6 +12,8 @@ Copyright (c) 2018 KU Leuven. All rights reserved.
 import sys
 import argparse
 import logging
+import csv
+
 import asyncio
 import websockets
 import json
@@ -21,12 +23,16 @@ import uuid
 import time
 
 logger = logging.getLogger(__name__)
-
+FILENAME = "stats.csv"
 
 def register_data(t,r,c,w):
-    file = open('stats.txt', 'a+')
-    file.write(str(t) + "," + str(r) + "," + str(c) + "," + str(w) + "\n")
-    file.close()
+    with open(FILENAME, 'a', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        writer.writerow([t, r, c, w])
+    csvfile.close()
+    # file = open('stats.txt', 'a+')
+    # file.write(str(t) + "," + str(r) + "," + str(c) + "," + str(w) + "\n")
+    # file.close()
 
 
 def start_competition(address1, address2, nb_rows, nb_cols, timelimit):
