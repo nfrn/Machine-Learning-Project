@@ -2,9 +2,11 @@ from board import Board
 import random
 import csv
 import numpy as np
+import sys
 
-NUMBEROFGAMES=10
-SIZELIMIT = 10
+NUMBEROFGAMES=50
+SIZELIMIT = 30
+FILENAME = 'stateToFeatures2.csv'
 
 
 def get_neighbors(square_number,row, cols):
@@ -69,24 +71,22 @@ def create_chains(rows, cols, state):
     chains = []
     for x in range(len(squares)):
         square_number = squares[x][0]
-        print("Square:" + str(square_number))
         neighbors = get_neighbors(square_number, rows, cols)
-        print(squares[x][1])
-        print(neighbors)
         for x2 in neighbors:
             values = get_square_values(x2[1],cols,state)
-            print(values)
-            print(squares[x][1])
-            if values[1] == 1:
-                pass
-            # missing other scenarios just looking at right(2)
-            if values[1] == 2 and squares[x][1][0] == squares[x][1][3] == values[0][0] == values[0][3]:
+            numberofcuts = sum(values[0])
+            #print(x2)
+            if x2[0] == 1 and (squares[x][1][0] == values[0][3] == False) and numberofcuts==2:
                 chains.append([squares[x],[x2[1],values[0]]])
 
-            if values[1] == 3:
-                pass
-            if values[1] == 4:
-                pass
+            if x2[0] == 2 and (squares[x][1][2] == values[0][1] == False) and numberofcuts==2:
+                chains.append([squares[x],[x2[1],values[0]]])
+
+            if x2[0] == 3 and (squares[x][1][3] == values[0][0] == False) and numberofcuts==2:
+                chains.append([squares[x],[x2[1],values[0]]])
+
+            if x2[0] == 4 and (squares[x][1][1] == values[0][2] == False) and numberofcuts==2:
+                chains.append([squares[x],[x2[1],values[0]]])
 
     return chains
 
@@ -97,70 +97,110 @@ def expand_chains(chains,rows,cols,state):
 
         last_square_number = last_square[0]
         last_square_cuts = last_square[1]
-        # remove from neighbors the boxes already in the chain.
-        #squares_in_chain= []
-        #for square, cuts in chain:
-         #   squares_in_chain.append(square)
 
         neighbors = get_neighbors(last_square_number,rows,cols)
+
+        for ori,box in neighbors:
+            for square, cuts in chain:
+                if square == box:
+                    neighbors.remove([ori,box])
+                    break
+
+        #print(neighbors)
 
         for neighbor in neighbors:
 
             neighbor_values = get_square_values(neighbor[1],cols,state)[0]
             numberofcuts = sum(neighbor_values)
-            print("CUTS:"+ str(numberofcuts))
+
             #check if neighbors expand a chain, if yes return expand = True
-            if neighbor[0] == 1:
-                pass
-                # missing other scenarios just looking at right(2)
-            if neighbor[0] == 2 and last_square_cuts[2] != neighbor_values[2] and numberofcuts==2:
+            if neighbor[0] == 1 and (last_square_cuts[0] == neighbor_values[3]== False) and numberofcuts==2:
+                #print("a")
+                #print(last_square_cuts)
+                #print(neighbor_values)
+                #print(neighbor[1])
+                chain.append([neighbor[1], neighbor_values])
+                expand=True
+            if neighbor[0] == 2 and (last_square_cuts[2] == neighbor_values[1]== False) and numberofcuts==2:
+                #print("b")
+                #print(last_square_cuts)
+                #print(neighbor_values)
+                #print(neighbor[1])
                 chain.append([neighbor[1], neighbor_values])
                 expand=True
 
-            if neighbor[0] == 3:
-                pass
-            if neighbor[0] == 4:
-                pass
+            if neighbor[0] == 3 and (last_square_cuts[3] == neighbor_values[0]== False) and numberofcuts==2:
+                #print("c")
+                #print(last_square_cuts)
+                #print(neighbor_values)
+                #print(neighbor[1])
+                chain.append([neighbor[1], neighbor_values])
+                expand=True
+
+            if neighbor[0] == 4 and (last_square_cuts[1] == neighbor_values[2]== False) and numberofcuts==2:
+                #print("d")
+                #print(last_square_cuts)
+                #print(neighbor_values)
+                #print(neighbor[1])
+                chain.append([neighbor[1], neighbor_values])
+                expand=True
 
     return chains, expand
 
-def classify_chains(chains):
-    return 1,2,3,4,5
+
+def convert_state(state):
+    number = 0
+    for x in range(len(state)):
+        number += x*10 * state[x]
+    return number
 
 def get_features(rows, cols, state):
     chains = create_chains(rows,cols,state)
-    print(chains)
 
     expand = True
-    while expand:
+    count = 0
+    while expand and count < 5:
         newchains,expand = expand_chains(chains,rows,cols,state)
+        count+=1
         chains = newchains[:]
-
-    print(chains)
-    total_chains, half_open, closed, prepared, prepared_closed = classify_chains(chains)
-    return total_chains, half_open, closed, prepared, prepared_closed
-
+    if len(chains)==0:
+        return 0,0
+    value = max(len(chain) for chain in chains)
+    return len(chains), value
 
 def generator():
-    with open('stateToFeatures.csv', 'w') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+    with open(FILENAME, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quoting=1)
 
         for x in range(NUMBEROFGAMES):
-            rows = random.randint(1, 10)
-            cols = random.randint(1, 10)
+            rows = random.randint(3, SIZELIMIT)
+            cols = random.randint(3, SIZELIMIT)
+            print("Game:" + str(x) + " Rows:" + str(rows) + " Cols:" + str(cols))
+            sys.stdout.flush()
 
             board = Board(rows,cols)
-
             state = board.init_representation()
 
-            total_chains, half_open, closed, prepared, prepared_closed = get_features(rows, cols,state[1:]);
-
-            writer.writerow(state[1:], rows, cols, total_chains, half_open, closed, prepared, prepared_closed)
+            while not board.is_finished(state):
+                #print(1)
+                moves = board.legal_plays(state)
+                #print(2)
+                new_state = board.next_state(state,random.choice(moves))
+                #print(3)
+                state = new_state[:]
+                #print(4)
+                max_size_chain, number_of_chains = get_features(rows, cols, state[1:])
+                #print(5)
+                writer.writerow([convert_state(state[1:]), rows, cols, max_size_chain, number_of_chains])
+                #print(6)
+    csvfile.close()
 
 
 
 if __name__ == "__main__":
     # example get_squares_open(3,3,[1,0,1 ,1,0,1,1 ,1,1,0 ,0,0,1,0, 0,1,1 ,0,0,1,1 ,0,0,0 ])
-    get_features(3,3,[1,1,1 ,1,0,0,0 ,1,1,1 ,0,0,0,0, 0,0,0 ,0,0,0,0 ,0,0,0 ])
-
+   #get_features(3,3,[1,1,1                    ,1,0,0,1
+                    #1,1,0
+                    #0,0,0,1, 1,1,1 ,0,0,0,0 ,0,0,0 ])
+    generator()
 

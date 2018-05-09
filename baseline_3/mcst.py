@@ -6,6 +6,10 @@ import math
 from random import choice
 from board import hashable
 from board import Board
+from sklearn.externals import joblib
+
+MAX_PREDICTOR_FILENAME = "Models/chain_count.sav"
+COUNT_PREDICTOR_FILENAME = "Models/chain_max.sav"
 
 
 class Mcst:
@@ -13,13 +17,15 @@ class Mcst:
     def __init__(self, board, time_limit):
         self.time_limit = time_limit
         self.board = board  # Simulation class
-
         self.last_state = (1, self.board.init_representation())
         self.next_states = [] # (MOVE, STATE)
         self.visited_states = [] # (MOVE, STATE)
 
         self.wins = {}    # (PLAYER, hash(STATE))
         self.plays = {}   # (PLAYER, hash(STATE))
+
+        self.chain_max_model = joblib.load(MAX_PREDICTOR_FILENAME)
+        self.chain_count_model = joblib.load(COUNT_PREDICTOR_FILENAME)
 
     def clear(self):
         self.board = Board(self.board.rows, self.board.cols)
@@ -121,6 +127,8 @@ class Mcst:
         new_state, new_move = self.board.register_state(self.last_state[1], row, col, ori, player)
         self.last_state = (new_move, new_state)
 
+
+
     def uct_selection(self, states):
 
         list_not_played = []
@@ -137,12 +145,19 @@ class Mcst:
 
         value, move, state = max(
             ((float(self.wins[(self.board.current_player(S), hashable(S))]) / self.plays[(self.board.current_player(S), hashable(S))]) +
-             1.4 * math.sqrt(float(log_total) / self.plays[(self.board.current_player(S), hashable(S))]), p, S)
+             1.4 * math.sqrt(float(log_total) / self.plays[(self.board.current_player(S), hashable(S))])
+             + self.chain_max_model.predict([[convert_state(S[1:]), self.board.rows, self.board.cols]])
+
+             , p, S)
             for p, S in states)
 
         # print("Selected state with uct value:" + str(value))
         return state, move
 
 
-
+def convert_state(state):
+    number = 0
+    for x in range(len(state)):
+        number += x*10 * state[x]
+    return number
 
