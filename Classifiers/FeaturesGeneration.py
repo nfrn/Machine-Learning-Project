@@ -3,9 +3,10 @@ import random
 import csv
 import numpy as np
 import sys
+import itertools
 
-NUMBEROFGAMES=50
-SIZELIMIT = 30
+NUMBEROFGAMES=100
+SIZELIMIT = 20
 FILENAME = 'stateToFeatures2.csv'
 
 
@@ -55,6 +56,17 @@ def get_square_values(square, cols, state):
 
     return square, count
 
+
+def convert_neighbor(x):
+    if x ==1:
+        return 3,0
+    if x==2:
+        return 1,2
+    if x==3:
+        return 0,3
+    if x==4:
+        return 2,1
+
 def get_squares_open(row, cols, state):
     total_squares = row * cols
     squares = []
@@ -100,11 +112,12 @@ def expand_chains(chains,rows,cols,state):
 
         neighbors = get_neighbors(last_square_number,rows,cols)
 
-        for ori,box in neighbors:
-            for square, cuts in chain:
+#        print(neighbors)
+        for square, cuts in chain:
+            for [ori, box] in neighbors:
                 if square == box:
                     neighbors.remove([ori,box])
-                    break
+
 
         #print(neighbors)
 
@@ -120,6 +133,7 @@ def expand_chains(chains,rows,cols,state):
                 #print(neighbor_values)
                 #print(neighbor[1])
                 chain.append([neighbor[1], neighbor_values])
+                #print("added")
                 expand=True
             if neighbor[0] == 2 and (last_square_cuts[2] == neighbor_values[1]== False) and numberofcuts==2:
                 #print("b")
@@ -127,6 +141,7 @@ def expand_chains(chains,rows,cols,state):
                 #print(neighbor_values)
                 #print(neighbor[1])
                 chain.append([neighbor[1], neighbor_values])
+                #print("added")
                 expand=True
 
             if neighbor[0] == 3 and (last_square_cuts[3] == neighbor_values[0]== False) and numberofcuts==2:
@@ -135,6 +150,7 @@ def expand_chains(chains,rows,cols,state):
                 #print(neighbor_values)
                 #print(neighbor[1])
                 chain.append([neighbor[1], neighbor_values])
+                #print("added")
                 expand=True
 
             if neighbor[0] == 4 and (last_square_cuts[1] == neighbor_values[2]== False) and numberofcuts==2:
@@ -143,9 +159,67 @@ def expand_chains(chains,rows,cols,state):
                 #print(neighbor_values)
                 #print(neighbor[1])
                 chain.append([neighbor[1], neighbor_values])
+                #print("added")
                 expand=True
 
     return chains, expand
+
+
+def merge_chains(chains, rows,cols,state):
+    for pair_chain in itertools.combinations([chains], 2):
+        print(pair_chain)
+        last_square0 = pair_chain[0][-1]
+        last_square_number0 = last_square0[0]
+        last_square_cuts0 = last_square0[1]
+
+        neighbors0 = get_neighbors(last_square_number0, rows, cols)
+
+        for ori, box in neighbors0:
+            for square, cuts in pair_chain[0]:
+                if square == box:
+                    neighbors0.remove([ori, box])
+                    break
+
+        last_square1 = pair_chain[1][-1]
+        last_square_number1 = last_square1[0]
+        last_square_cuts1 = last_square1[1]
+
+        neighbors1 = get_neighbors(last_square_number1, rows, cols)
+
+        for ori, box in neighbors1:
+            for square, cuts in pair_chain[1]:
+                if square == box:
+                    neighbors1.remove([ori, box])
+                    break
+
+        for neighbor0 in neighbors0:
+            for neighbor1 in neighbors1:
+                if neighbor0[1]==neighbor1[1]:
+                    neighbor_values = get_square_values(neighbor0[1], cols, state)[0]
+                    numberofcuts = sum(neighbor_values)
+                    if numberofcuts == 2:
+                        box0, nei0 = convert_neighbor(neighbor0[0])
+                        box1, nei1 = convert_neighbor(neighbor1[0])
+
+                        if (last_square_cuts0[box1]==neighbor_values[nei0]==False) and \
+                            (last_square_cuts1[box0]==neighbor_values[nei1]==False):
+                            "chains remove A and B"
+                            chains.remove(pair_chain[0])
+                            chains.remove(pair_chain[1])
+                            "chains add A+B"
+                            merged = pair_chain[0] + pair_chain[1] + [[neighbor0[1], neighbor_values]]
+                            print(pair_chain[0])
+                            print(pair_chain[1])
+                            #print(merged)
+                            chains.append(merged)
+
+                            #print("merged")
+
+
+
+
+
+    return chains
 
 
 def convert_state(state):
@@ -154,19 +228,20 @@ def convert_state(state):
         number += x*10 * state[x]
     return number
 
+
 def get_features(rows, cols, state):
     chains = create_chains(rows,cols,state)
-
+    #print(chains)
     expand = True
-    count = 0
-    while expand and count < 5:
+    while expand:
         newchains,expand = expand_chains(chains,rows,cols,state)
-        count+=1
-        chains = newchains[:]
+        newchains2 = merge_chains(newchains, rows, cols, state)
+        chains = newchains2[:]
     if len(chains)==0:
-        return 0,0
+        return 0,0,0
     value = max(len(chain) for chain in chains)
-    return len(chains), value
+    avg = sum(len(chain) for chain in chains)/len(chains)
+    return len(chains), avg, value
 
 def generator():
     with open(FILENAME, 'w', newline='') as csvfile:
@@ -189,18 +264,14 @@ def generator():
                 #print(3)
                 state = new_state[:]
                 #print(4)
-                max_size_chain, number_of_chains = get_features(rows, cols, state[1:])
+                number_of_chains, average, max_size_chain = get_features(rows, cols, state[1:])
                 #print(5)
-                writer.writerow([convert_state(state[1:]), rows, cols, max_size_chain, number_of_chains])
+                print(str(number_of_chains)+ ":" +  str(average) + ":" + str(max_size_chain))
+                writer.writerow([convert_state(state[1:]), rows, cols, number_of_chains,average,max_size_chain])
                 #print(6)
     csvfile.close()
 
 
 
 if __name__ == "__main__":
-    # example get_squares_open(3,3,[1,0,1 ,1,0,1,1 ,1,1,0 ,0,0,1,0, 0,1,1 ,0,0,1,1 ,0,0,0 ])
-   #get_features(3,3,[1,1,1                    ,1,0,0,1
-                    #1,1,0
-                    #0,0,0,1, 1,1,1 ,0,0,0,0 ,0,0,0 ])
     generator()
-
