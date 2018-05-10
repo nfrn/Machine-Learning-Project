@@ -53,11 +53,16 @@ async def connect_agent(uri1, uri2, nb_rows, nb_cols, timelimit):
             columns.append({"v":0, "h":0, "p":0})
         cells.append(columns)
 
+    connecting = time.time()
+
     logger.info("Connecting to {}".format(uri1))
     async with websockets.connect(uri1) as websocket1:
         logger.info("Connecting to {}".format(uri2))
         async with websockets.connect(uri2) as websocket2:
             logger.info("Connected")
+
+            start = time.time()
+            # print("COMPETE: Time to connect: {}".format(start - connecting))
 
             # Start game
             msg = {
@@ -70,6 +75,9 @@ async def connect_agent(uri1, uri2, nb_rows, nb_cols, timelimit):
             await websocket1.send(json.dumps(msg))
             msg["player"] = 2
             await websocket2.send(json.dumps(msg))
+
+            run = time.time()
+            # print("COMPETE: Time till start: {}".format(run - start))
 
             # Run game
             while winner is None:
@@ -118,6 +126,9 @@ async def connect_agent(uri1, uri2, nb_rows, nb_cols, timelimit):
 
                 cur_player = next_player
 
+            end = time.time()
+            # print("COMPETE: game time: {}".format(end - run))
+
             # End game
             logger.info("Game ended: points1={} - points2={} - winner={}".format(points[1], points[2], winner))
             msg = {
@@ -132,6 +143,9 @@ async def connect_agent(uri1, uri2, nb_rows, nb_cols, timelimit):
             }
             await websocket1.send(json.dumps(msg))
             await websocket2.send(json.dumps(msg))
+
+            wrapup = time.time()
+            # print("COMPETE: wrapup time: {}".format(wrapup - end))
 
     # Timings
     for i in [1, 2]:

@@ -3,29 +3,37 @@ import logging
 import argparse
 import pandas
 import sys
+import time
 
 logger = logging.getLogger(__name__)
 filename = "stats.csv"
+LOGGING = True
+timing = True
 
 def test_win_rate(rows, columns, timelimit, nb_games):
     f = open(filename, "w+")
     f.write("timelimit,rows,columns,winner\n")
     f.close()
-
+    print("  Expected game time: {}s".format(
+        timelimit * ((rows + 1) * columns + (columns + 1) * rows)))
     for x in range(nb_games):
-        print("Running game: " + str(x))
-        os.system('python dotsandboxescompete.py ws://127.0.0.1:8082 ws://127.0.0.1:8081 -q --rows {} --cols {} --timelimit {}'.format(rows, columns, timelimit))
+        gametime = time.time()
+        if LOGGING:
+            print("  Running game: " + str(x + 1))
+        os.system('python dotsandboxescompete.py ws://127.0.0.1:8082 ws://127.0.0.1:8083 -q --rows {} --cols {} --timelimit {}'.format(rows, columns, timelimit))
+        if timing:
+            print("    Time elapsed: {}s".format(time.time() - gametime))
     stats = pandas.read_csv("stats.csv", delimiter=',')
 
-    print(list(stats))
     nb_games = stats.shape[0]
     nb_wins = stats[stats["winner"] == 1].shape[0]
     nb_draws = stats[stats["winner"] == 0].shape[0]
 
     winrate = nb_wins/nb_games * 100
     drawrate = nb_draws/nb_games * 100
-    print("Win rate for agent 1: " + str(nb_wins/nb_games * 100) + "%.")
-    print("Draw rate: " + str(nb_draws/nb_games * 100) + "%.")
+    if LOGGING:
+        print("Win rate for agent 1: " + str(nb_wins/nb_games * 100) + "%.")
+        print("Draw rate: " + str(nb_draws/nb_games * 100) + "%.")
     return winrate, drawrate
 
 
