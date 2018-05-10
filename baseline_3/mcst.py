@@ -10,6 +10,8 @@ MAX_PREDICTOR_FILENAME = "Models/max_chain_length_classifier.sav"
 COUNT_PREDICTOR_FILENAME = "Models/nb_chains_classifier.sav"
 AVG_PREDICTOR_FILENAME = "Models/avg_chain_length_classifier.sav"
 
+timing = True
+
 
 class Mcst:
 
@@ -50,7 +52,7 @@ class Mcst:
         if possible_moves.shape[0] == 0:
             return -1
 
-        while time.time() - begin_time < self.time_limit:
+        while time.time() - begin_time < self.time_limit * 0.9:
             self.simulate_random_game(player1)
             simulated_games += 1
 
