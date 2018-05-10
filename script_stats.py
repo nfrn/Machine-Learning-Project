@@ -13,7 +13,8 @@ def test_win_rate(rows, columns, timelimit, nb_games):
     f.close()
 
     for x in range(nb_games):
-        os.system('python dotsandboxescompete.py ws://127.0.0.1:8081 ws://127.0.0.1:8082 --rows {} --cols {} --timelimit {}'.format(rows, columns, timelimit))
+        print("Running game: " + str(x))
+        os.system('python dotsandboxescompete.py ws://127.0.0.1:8082 ws://127.0.0.1:8081 -q --rows {} --cols {} --timelimit {}'.format(rows, columns, timelimit))
     stats = pandas.read_csv("stats.csv", delimiter=',')
 
     print(list(stats))

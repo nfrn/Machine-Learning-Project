@@ -200,7 +200,7 @@ def user_action(r, c, o, cur_player, cells, points, nb_rows, nb_cols):
         next_player = 3 - cur_player
     else:
         next_player = cur_player
-        print("Update points: player1={} - player2={}".format(points[1], points[2]))
+        # print("Update points: player1={} - player2={}".format(points[1], points[2]))
     return next_player
 
 

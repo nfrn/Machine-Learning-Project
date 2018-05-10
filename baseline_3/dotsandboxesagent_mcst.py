@@ -51,8 +51,7 @@ class DotsAndBoxesAgent:
         self.ended = False
         self.nb_rows = nb_rows
         self.nb_cols = nb_cols
-        self.mcst = Mcst(Board(nb_rows, nb_cols), timelimit)
-        print("NEW AGENT INITIALIZED")
+        self.mcst = Mcst(Board(nb_rows, nb_cols), timelimit, weights)
 
     def add_player(self, player):
         """Use the same agent for multiple players."""
@@ -119,7 +118,7 @@ async def handler(websocket, path):
                 if msg["player"] == 1:
                     # Start the game
                     nm = games[game].next_action()
-                    print('nm = {}'.format(nm))
+                    # print('nm = {}'.format(nm))
                     if nm is None:
                         # Game over
                         logger.info("Game over")
@@ -163,7 +162,7 @@ async def handler(websocket, path):
                 logger.error("Unknown message type:\n{}".format(msg))
 
             if answer is not None:
-                print(answer)
+                # print(answer)
                 await websocket.send(json.dumps(answer))
                 logger.info("> {}".format(answer))
     except websockets.exceptions.ConnectionClosed as err:
@@ -191,8 +190,9 @@ def main(argv=None):
 
     logger.setLevel(max(logging.INFO - 10 * (args.verbose - args.quiet), logging.DEBUG))
     logger.addHandler(logging.StreamHandler(sys.stdout))
-    print("Running agent with weights: " + str(args.weights))
-
+    # print("Running agent with weights: " + str(args.weights))
+    global weights
+    weights = args.weights
     agentclass = DotsAndBoxesAgent
     start_server(args.port)
 
