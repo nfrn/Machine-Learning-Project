@@ -14,6 +14,8 @@ import logging
 import asyncio
 import websockets
 import json
+from sklearn.externals import joblib
+import time
 
 from baseline_3.board import Board
 from baseline_3.mcst import Mcst
@@ -22,6 +24,13 @@ from baseline_3.mcst import Mcst
 logger = logging.getLogger(__name__)
 games = {}
 agentclass = None
+
+
+LOGGING = False
+MAX_PREDICTOR_FILENAME = "Models/max_chain_length_classifier.sav"
+COUNT_PREDICTOR_FILENAME = "Models/nb_chains_classifier.sav"
+AVG_PREDICTOR_FILENAME = "Models/avg_chain_length_classifier.sav"
+timing = True
 
 
 class DotsAndBoxesAgent:
@@ -51,7 +60,8 @@ class DotsAndBoxesAgent:
         self.ended = False
         self.nb_rows = nb_rows
         self.nb_cols = nb_cols
-        self.mcst = Mcst(Board(nb_rows, nb_cols), timelimit, weights)
+
+        self.mcst = Mcst(Board(nb_rows, nb_cols), timelimit, weights, cmm, ccm, cam)
 
     def add_player(self, player):
         """Use the same agent for multiple players."""
@@ -118,7 +128,8 @@ async def handler(websocket, path):
                 if msg["player"] == 1:
                     # Start the game
                     nm = games[game].next_action()
-                    # print('nm = {}'.format(nm))
+                    if LOGGING:
+                        print('nm = {}'.format(nm))
                     if nm is None:
                         # Game over
                         logger.info("Game over")
@@ -162,7 +173,8 @@ async def handler(websocket, path):
                 logger.error("Unknown message type:\n{}".format(msg))
 
             if answer is not None:
-                # print(answer)
+                if LOGGING:
+                    print(answer)
                 await websocket.send(json.dumps(answer))
                 logger.info("> {}".format(answer))
     except websockets.exceptions.ConnectionClosed as err:
@@ -172,7 +184,8 @@ async def handler(websocket, path):
 
 def start_server(port):
     server = websockets.serve(handler, 'localhost', port)
-    print("Running on ws://127.0.0.1:{}".format(port))
+    if LOGGING:
+        print("Running on ws://127.0.0.1:{}".format(port))
     asyncio.get_event_loop().run_until_complete(server)
     asyncio.get_event_loop().run_forever()
 
@@ -191,10 +204,28 @@ def main(argv=None):
     logger.setLevel(max(logging.INFO - 10 * (args.verbose - args.quiet), logging.DEBUG))
     logger.addHandler(logging.StreamHandler(sys.stdout))
     # print("Running agent with weights: " + str(args.weights))
+
     global weights
+    global cmm
+    global ccm
+    global cam
+    print("Started loading models")
+    loadm1 = time.time()
+    cmm = joblib.load(MAX_PREDICTOR_FILENAME)
+    loadm2 = time.time()
+    ccm = joblib.load(COUNT_PREDICTOR_FILENAME)
+    loadm3 = time.time()
+    cam = joblib.load(AVG_PREDICTOR_FILENAME)
+    loadm4 = time.time()
+    if timing:
+        print("Max chain model load time: {}".format(loadm2 - loadm1))
+        print("Count chain model load time: {}".format(loadm3 - loadm2))
+        print("Average chain model load time: {}".format(loadm4 - loadm3))
+
     weights = args.weights
     agentclass = DotsAndBoxesAgent
     start_server(args.port)
+
 
 
 if __name__ == "__main__":

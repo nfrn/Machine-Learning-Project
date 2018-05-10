@@ -4,8 +4,8 @@ import sys
 
 from board import Board
 
-NUMBEROFGAMES=5
-SIZELIMIT = 30
+NUMBEROFGAMES=200
+SIZELIMIT = 25
 FILENAME = 'stateToFeatures2.csv'
 
 
@@ -216,7 +216,7 @@ def merge_chains(chains, rows,cols,state, closedchains):
                             if (last_square_cuts0[box1]==neighbor_values[nei0]==False) and \
                                     (last_square_cuts1[box0]==neighbor_values[nei1]==False):
                                 "chains remove A and B"
-                                print("merge")
+                                # print("merge")
                                 if pair_chain[0] in chains:
                                     chains.remove(pair_chain[0])
                                 if pair_chain[1] in chains:
@@ -263,13 +263,13 @@ def get_features(rows, cols, state):
     chains = create_chains(rows,cols,state)
     closed_chains = []
     expand = True
-    print("nb", end=":")
+    # print("nb", end=":")
     while expand:
         chains, closed_chains, expand = expand_chains(chains,rows,cols,state,closed_chains)
         chains, closed_chains = merge_chains(chains, rows, cols, state, closed_chains)
     if len(chains)==0:
         return 0,0,0
-    print(".")
+    # print(".")
     chains = chains + closed_chains
 
     max_length = max(len(chain) for chain in chains)
@@ -277,7 +277,7 @@ def get_features(rows, cols, state):
     return len(chains), avg, max_length
 
 def generator():
-    with open(FILENAME, 'a', newline='') as csvfile:
+    with open(FILENAME, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quoting=1)
 
         for x in range(NUMBEROFGAMES):

@@ -11,7 +11,7 @@ min_size = 3
 size_limit = 4
 min_time_limit = 0.1
 max_time_limit = 0.2
-duration = 600
+duration = 120
 
 LOGGING = True
 
@@ -22,7 +22,7 @@ def generator():
         #                  'avg_chain_weight', 'max_chain_weight',
         #                  'winrate', 'drawrate'])
 
-        proc1 = subprocess.Popen('python baseline_3/dotsandboxesagent_mcst.py -q 8083')
+        proc1 = subprocess.Popen('python baseline_3/dotsandboxesagent_mcst.py -q 8085')
         begin = time.time()
         x = 1
         while time.time() - begin < duration:
@@ -30,8 +30,8 @@ def generator():
             if LOGGING:
                 print('Testing variation: ' + str(x) + " with stats {} {} {} {} {} {}".format(r, c, tl, ncw, acw, mcw))
 
-            proc2 = subprocess.Popen('python baseline_3/dotsandboxesagent_mcst.py 8082 -q -w {} {} {}'.format(ncw, acw, mcw))
-            time.sleep(15)
+            proc2 = subprocess.Popen('python baseline_3/dotsandboxesagent_mcst.py 8084 -q -w {} {} {}'.format(ncw, acw, mcw))
+            time.sleep(30)
             wrate, drate = script_stats.test_win_rate(r, c, tl, nb_games)
             writer.writerow([r, c, tl, ncw, acw, mcw, wrate, drate])
             proc2.kill()

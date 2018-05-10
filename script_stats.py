@@ -20,7 +20,7 @@ def test_win_rate(rows, columns, timelimit, nb_games):
         gametime = time.time()
         if LOGGING:
             print("  Running game: " + str(x + 1))
-        os.system('python dotsandboxescompete.py ws://127.0.0.1:8082 ws://127.0.0.1:8083 -q --rows {} --cols {} --timelimit {}'.format(rows, columns, timelimit))
+        os.system('python dotsandboxescompete.py ws://127.0.0.1:8084 ws://127.0.0.1:8085 -q --rows {} --cols {} --timelimit {}'.format(rows, columns, timelimit))
         if timing:
             print("    Time elapsed: {}s".format(time.time() - gametime))
     stats = pandas.read_csv("stats.csv", delimiter=',')
