@@ -15,7 +15,7 @@ timing = False
 
 class Mcst:
 
-    def __init__(self, board, time_limit, weights, cmm, ccm, cam):
+    def __init__(self, board, time_limit, weights, model):
 
         init1 = time.time()
         self.time_limit = time_limit
@@ -28,18 +28,19 @@ class Mcst:
         self.plays = {}   # (PLAYER, hash(STATE))
         self.weights = weights
 
-        loadm1 = time.time()
-        self.chain_max_model = cmm
-        loadm2 = time.time()
-        self.chain_count_model = ccm
-        loadm3 = time.time()
-        self.chain_avg_model = cam
-        loadm4 = time.time()
-        if timing:
-            print("Mcst initialisation time: {}".format(loadm1-init1))
-            print("Max chain model load time: {}".format(loadm2 - loadm1))
-            print("Count chain model load time: {}".format(loadm3 - loadm2))
-            print("Average chain model load time: {}".format(loadm4 - loadm3))
+        self.model = model
+        # loadm1 = time.time()
+        # self.chain_max_model = cmm
+        # loadm2 = time.time()
+        # self.chain_count_model = ccm
+        # loadm3 = time.time()
+        # self.chain_avg_model = cam
+        # loadm4 = time.time()
+        # if timing:
+        #     print("Mcst initialisation time: {}".format(loadm1-init1))
+        #     print("Max chain model load time: {}".format(loadm2 - loadm1))
+        #     print("Count chain model load time: {}".format(loadm3 - loadm2))
+        #     print("Average chain model load time: {}".format(loadm4 - loadm3))
 
 
     def clear(self):
@@ -98,9 +99,11 @@ class Mcst:
         best_move, best_state = choice(next_states)
         # begin = time.time()
         for move, state in next_states:
-            plays = self.plays.get((self.board.current_player(state), hashable(state)), 1)
+            plays = self.plays.get((self.board.current_player(state),
+                                    hashable(state)), 1)
             if plays != 0:
-                wins = self.wins.get((self.board.current_player(state), hashable(state)), 0)
+                wins = self.wins.get((self.board.current_player(state),
+                                      hashable(state)), 0)
                 win = float(wins)/plays
                 if win > best_win:
                     best_win = win
@@ -154,7 +157,8 @@ class Mcst:
         # print("Time to update tree: {}".format(time.time() - finished))
 
     def register_other_player_move(self, row, col, ori, player):
-        new_state, new_move = self.board.register_state(self.last_state[1], row, col, ori, player)
+        new_state, new_move = self.board.register_state(self.last_state[1],
+                                                        row, col, ori, player)
         self.last_state = (new_move, new_state)
 
     def uct_selection(self, states):
@@ -177,29 +181,18 @@ class Mcst:
         # print("Time to make random choice from unplayed: {}".format(init3 - init2))
 
         log_total = math.log(
-            sum(self.plays[(b.current_player(S), hashable(S))] for p, S in states))
+            sum(self.plays[(b.current_player(S), hashable(S))]
+                for p, S in states))
 
         value, move, state = max(
-            ((float(self.wins[(b.current_player(S), hashable(S))]) / self.plays[(b.current_player(S), hashable(S))]) +
-             1.4 * math.sqrt(float(log_total) / self.plays[(b.current_player(S), hashable(S))])
+            ((float(self.wins[(b.current_player(S), hashable(S))]) /
+              self.plays[(b.current_player(S), hashable(S))]) +
+             1.4 * math.sqrt(float(log_total) /
+                             self.plays[(b.current_player(S), hashable(S))])
              + self.get_prediction_value(S[1:], b.rows, b.cols)
              , p, S)
             for p, S in states)
-        init4 = time.time()
-        #print("Time to calculate stuff: {}".format(init4 - init3))
-        # value, move, state = max(
-        #     ((float(self.wins[(self.board.current_player(S), hashable(S))]) / self.plays[(self.board.current_player(S), hashable(S))]) +
-        #      1.4 * math.sqrt(float(log_total) / self.plays[(self.board.current_player(S), hashable(S))])
-        #      + self.weights[0] * self.chain_count_model.predict([[convert_state(S[1:], self.board.rows, self.board.cols), self.board.rows, self.board.cols]])
-        #      + self.weights[1] * self.chain_avg_model.predict([[convert_state(S[1:], self.board.rows, self.board.cols), self.board.rows, self.board.cols,
-        #                                                         self.chain_count_model.predict([[convert_state(S[1:], self.board.rows, self.board.cols), self.board.rows, self.board.cols]])]])
-        #      + self.weights[2] * self.chain_max_model.predict(
-        #         [[convert_state(S[1:], self.board.rows, self.board.cols), self.board.rows, self.board.cols,
-        #           self.chain_count_model.predict([[convert_state(S[1:], self.board.rows, self.board.cols), self.board.rows, self.board.cols]]),
-        #           self.chain_avg_model.predict([[convert_state(S[1:], self.board.rows, self.board.cols), self.board.rows, self.board.cols,self.chain_count_model.predict([[convert_state(S[1:], self.board.rows, self.board.cols), self.board.rows, self.board.cols]])]])]])
-        #      , p, S)
-        #     for p, S in states)
-        init1 = time.time()
+
         # print("Selected state with uct value:" + str(value))
         return state, move
 
@@ -207,24 +200,17 @@ class Mcst:
         begin = time.time()
         cstate = convert_state(state, c)
         convert = time.time()
+        ccpred, avgpred, maxpred = self.model.predict([[cstate, r, c]])
         #print("Time to convert state: {}".format(convert-begin))
-        ccpred = self.chain_count_model.predict([[cstate, r, c]])
-        avgpred = self.chain_avg_model.predict([[cstate, r, c, ccpred]])
-        maxpred = self.chain_max_model.predict([[cstate, r, c, ccpred, avgpred]])
-        #print("Time to get predictions: {}".format(time.time() - convert))
+        # ccpred = self.chain_count_model.predict([[cstate, r, c]])
+        # avgpred = self.chain_avg_model.predict([[cstate, r, c, ccpred]])
+        # maxpred = self.chain_max_model.predict([[cstate, r, c, ccpred, avgpred]])
+        print("Time to get predictions: {}".format(time.time() - convert))
         w = self.weights
         return ccpred * w[0] + \
                avgpred * w[1] + \
                maxpred * w[2]
 
-
-# def convert_state(state):
-#     number = 0
-#     for x in range(len(state)):
-#         if state[x] == 0:
-#             continue
-#         number += x*10
-#     return number
 
 # TODO might get done more efficient by keeping a converted state as well.
 def convert_state(state, cols):

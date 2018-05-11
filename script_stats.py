@@ -5,7 +5,7 @@ import pandas
 import sys
 import time
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 filename = "stats.csv"
 LOGGING = True
 timing = True
@@ -20,7 +20,9 @@ def test_win_rate(rows, columns, timelimit, nb_games):
         gametime = time.time()
         if LOGGING:
             print("  Running game: " + str(x + 1))
-        os.system('python dotsandboxescompete.py ws://127.0.0.1:8084 ws://127.0.0.1:8085 -q --rows {} --cols {} --timelimit {}'.format(rows, columns, timelimit))
+        os.system('python dotsandboxescompete.py ws://127.0.0.1:8084 '
+                  'ws://127.0.0.1:8085 -q --rows {} --cols {} '
+                  '--timelimit {}'.format(rows, columns, timelimit))
         if timing:
             print("    Time elapsed: {}s".format(time.time() - gametime))
     stats = pandas.read_csv("stats.csv", delimiter=',')
@@ -38,9 +40,10 @@ def test_win_rate(rows, columns, timelimit, nb_games):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='Calculate win rate of agent 1 in x games')
-    parser.add_argument('--verbose', '-v', action='count', default=0, help='Verbose output')
-    parser.add_argument('--quiet', '-q', action='count', default=0, help='Quiet output')
+    parser = argparse.ArgumentParser(description='Calculate win '
+                                                 'rate of agent 1 in x games')
+    # parser.add_argument('--verbose', '-v', action='count', default=0, help='Verbose output')
+    # parser.add_argument('--quiet', '-q', action='count', default=0, help='Quiet output')
     parser.add_argument('--cols', '-c', type=int, default=2, help='Number of columns')
     parser.add_argument('--rows', '-r', type=int, default=2, help='Number of rows')
     parser.add_argument('--timelimit', '-t', type=float, default=0.5, help='Time limit per request in seconds')
@@ -48,8 +51,8 @@ def main(argv=None):
     # parser.add_argument('agents', nargs=2, metavar='AGENT', help='Websockets addresses for agents')
     args = parser.parse_args(argv)
 
-    logger.setLevel(max(logging.INFO - 10 * (args.verbose - args.quiet), logging.DEBUG))
-    logger.addHandler(logging.StreamHandler(sys.stdout))
+    # logger.setLevel(max(logging.INFO - 10 * (args.verbose - args.quiet), logging.DEBUG))
+    # logger.addHandler(logging.StreamHandler(sys.stdout))
 
     # start_competition(args.agents[0], args.agents[1], args.rows, args.cols, args.timelimit)
     test_win_rate(args.rows, args.cols, args.timelimit, args.nb_games)

@@ -27,9 +27,10 @@ agentclass = None
 
 
 LOGGING = False
-MAX_PREDICTOR_FILENAME = "Models/max_chain_length_classifier.sav"
-COUNT_PREDICTOR_FILENAME = "Models/nb_chains_classifier.sav"
-AVG_PREDICTOR_FILENAME = "Models/avg_chain_length_classifier.sav"
+# MAX_PREDICTOR_FILENAME = "Models/max_chain_length_classifier.sav"
+# COUNT_PREDICTOR_FILENAME = "Models/nb_chains_classifier.sav"
+# AVG_PREDICTOR_FILENAME = "Models/avg_chain_length_classifier.sav"
+MODEL = "Models/total.sav"
 timing = True
 
 
@@ -61,7 +62,7 @@ class DotsAndBoxesAgent:
         self.nb_rows = nb_rows
         self.nb_cols = nb_cols
 
-        self.mcst = Mcst(Board(nb_rows, nb_cols), timelimit, weights, cmm, ccm, cam)
+        self.mcst = Mcst(Board(nb_rows, nb_cols), timelimit, weights, model)
 
     def add_player(self, player):
         """Use the same agent for multiple players."""
@@ -206,21 +207,23 @@ def main(argv=None):
     # print("Running agent with weights: " + str(args.weights))
 
     global weights
-    global cmm
-    global ccm
-    global cam
+    # global cmm
+    # global ccm
+    # global cam
+    global model
     print("Started loading models")
     loadm1 = time.time()
-    cmm = joblib.load(MAX_PREDICTOR_FILENAME)
+    # cmm = joblib.load(MAX_PREDICTOR_FILENAME)
+    model = joblib.load(MODEL)
     loadm2 = time.time()
-    ccm = joblib.load(COUNT_PREDICTOR_FILENAME)
-    loadm3 = time.time()
-    cam = joblib.load(AVG_PREDICTOR_FILENAME)
-    loadm4 = time.time()
+    # ccm = joblib.load(COUNT_PREDICTOR_FILENAME)
+    # loadm3 = time.time()
+    # cam = joblib.load(AVG_PREDICTOR_FILENAME)
+    # loadm4 = time.time()
     if timing:
-        print("Max chain model load time: {}".format(loadm2 - loadm1))
-        print("Count chain model load time: {}".format(loadm3 - loadm2))
-        print("Average chain model load time: {}".format(loadm4 - loadm3))
+        # print("Max chain model load time: {}".format(loadm2 - loadm1))
+        # print("Count chain model load time: {}".format(loadm3 - loadm2))
+        # print("Average chain model load time: {}".format(loadm4 - loadm3))
 
     weights = args.weights
     agentclass = DotsAndBoxesAgent
