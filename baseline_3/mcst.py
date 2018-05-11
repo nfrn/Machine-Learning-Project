@@ -2,8 +2,8 @@ import time
 import numpy as np
 import math
 from random import choice
-from baseline_3.board import hashable
-from baseline_3.board import Board
+from board import hashable
+from board import Board
 from sklearn.externals import joblib
 
 MAX_PREDICTOR_FILENAME = "Models/max_chain_length_classifier.sav"
@@ -63,18 +63,17 @@ class Mcst:
         if possible_moves.shape[0] == 0:
             return -1
 
-        begin = time.time()
         while time.time() - begin_time < self.time_limit * 0.9:
             self.simulate_random_game(player1)
             simulated_games += 1
 
-        print("Simulation time: {}".format(time.time() - begin))
+
 
         # print("Simulated games: " + str(simulated_games))
 
         state, move, r, c, o = self.get_best_move(self.next_states)
         self.last_state = (move, state)
-
+        #print("Diference: {}".format((time.time() - begin_time)-self.time_limit))
         return r.item(), c.item(), o
 
     def expand_state(self, current_state):
@@ -126,7 +125,7 @@ class Mcst:
         # print("Time to init board: {}".format(init5 - init1))
         t = init2 - init1
         # if t > 0.1:
-        print("Time to init uct: {}".format(init2 - init1))
+        # print("Time to init uct: {}".format(init2 - init1))
         # print("Time to set player: {}".format(init3 - init2))
         # print("Time to make list: {}".format(init4 - init3))
         # print("Time to append to list: {}".format(init5 - init4))
@@ -187,7 +186,7 @@ class Mcst:
              , p, S)
             for p, S in states)
         init4 = time.time()
-        print("Time to calculate stuff: {}".format(init4 - init3))
+        #print("Time to calculate stuff: {}".format(init4 - init3))
         # value, move, state = max(
         #     ((float(self.wins[(self.board.current_player(S), hashable(S))]) / self.plays[(self.board.current_player(S), hashable(S))]) +
         #      1.4 * math.sqrt(float(log_total) / self.plays[(self.board.current_player(S), hashable(S))])
@@ -208,11 +207,11 @@ class Mcst:
         begin = time.time()
         cstate = convert_state(state, c)
         convert = time.time()
-        print("Time to convert state: {}".format(convert-begin))
+        #print("Time to convert state: {}".format(convert-begin))
         ccpred = self.chain_count_model.predict([[cstate, r, c]])
         avgpred = self.chain_avg_model.predict([[cstate, r, c, ccpred]])
         maxpred = self.chain_max_model.predict([[cstate, r, c, ccpred, avgpred]])
-        print("Time to get predictions: {}".format(time.time() - convert))
+        #print("Time to get predictions: {}".format(time.time() - convert))
         w = self.weights
         return ccpred * w[0] + \
                avgpred * w[1] + \

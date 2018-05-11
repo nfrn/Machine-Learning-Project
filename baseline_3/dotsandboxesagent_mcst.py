@@ -17,8 +17,8 @@ import json
 from sklearn.externals import joblib
 import time
 
-from baseline_3.board import Board
-from baseline_3.mcst import Mcst
+from board import Board
+from mcst import Mcst
 
 
 logger = logging.getLogger(__name__)

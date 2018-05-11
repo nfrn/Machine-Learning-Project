@@ -1,4 +1,4 @@
-import pandas
+import pandas as pd
 import numpy as np
 import scipy
 import matplotlib.pyplot as plt
@@ -9,69 +9,49 @@ from sklearn.metrics import mean_squared_error
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
 from sklearn.externals import joblib
-
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import r2_score
+from scipy.stats import spearmanr, pearsonr
+import time
+from sklearn import metrics
 
 
 # Data =
 if __name__ == "__main__":
-    games = pandas.read_csv("stateToFeatures2.csv", header=None, delimiter=",")
+    games = pd.read_csv("stateToFeatures2.csv", header=None, delimiter=",")
 
     train = games.sample(frac=0.8, random_state=1)
     test = games.loc[~games.index.isin(train.index)]
+
 
     print(train.shape)
     print(test.shape)
 
     columns = games.columns.tolist()
-
-
     columns_1 = [c for c in columns if c not in [3,4,5]]
+    target = [3,4,5]
 
-    # Store the variable we'll be predicting on.
-    target = 3
+    scaler = StandardScaler().fit(train[columns_1])
+    X_train_scaled = pd.DataFrame(scaler.transform(train[columns_1]), index=train[columns_1].index.values, columns=train[columns_1].columns.values)
+    X_test_scaled = pd.DataFrame(scaler.transform(test[columns_1]), index=test[columns_1].index.values, columns=test[columns_1].columns.values)
 
-    #model = LinearRegression()
-    model1 = RandomForestRegressor(n_estimators=400, min_samples_leaf=2, random_state=1)
-    #model = SVR()
+
+    model1 = RandomForestRegressor(n_estimators=100,bootstrap=True, max_depth=40,min_samples_leaf=4,min_samples_split=5)
 
     model1.fit(train[columns_1], train[target])
+
+    start = time.time()
     predictions = model1.predict(test[columns_1])
-    # model1.in
-    print(test[columns_1].shape)
-    print(mean_squared_error(predictions, test[target]))
-    filename = 'nb_chains_classifier.sav'
+    end = time.time()
+
+    test_score = r2_score(test[target], predictions)
+
+
+    mean_square = mean_squared_error(predictions, test[target])
+
+    print(f'Test mean square erro: {mean_square:.3}')
+    print(f'Test data R-2 score: {test_score:>5.3}')
+    print("Time:" + str(end - start))
+    filename = 'total.sav'
     joblib.dump(model1, filename)
-
-    columns_1 = [c for c in columns if c not in [4,5]]
-
-    # Store the variable we'll be predicting on.
-    target = 4
-
-    #model2 = LinearRegression()
-    model2 = RandomForestRegressor(n_estimators=400, min_samples_leaf=2, random_state=1)
-    #model2 = SVR()
-
-    model2.fit(train[columns_1], train[target])
-    predictions = model2.predict(test[columns_1])
-    print(test[columns_1].shape)
-    print(mean_squared_error(predictions, test[target]))
-    filename = 'avg_chain_length_classifier.sav'
-    joblib.dump(model2, filename)
-
-    columns_1 = [c for c in columns if c not in [5]]
-
-    # Store the variable we'll be predicting on.
-    target = 5
-
-    # model2 = LinearRegression()
-    model2 = RandomForestRegressor(n_estimators=400, min_samples_leaf=2, random_state=1)
-    # model2 = SVR()
-
-    model2.fit(train[columns_1], train[target])
-    predictions = model2.predict(test[columns_1])
-    print(test[columns_1].shape)
-    print(mean_squared_error(predictions, test[target]))
-    filename = 'max_chain_length_classifier.sav'
-    joblib.dump(model2, filename)
-
-
