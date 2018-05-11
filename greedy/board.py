@@ -79,7 +79,7 @@ class Board:
 
     def register_state(self, state, row, cols, ori, player):
         new_state = np.copy(state)
-        print(str(state[0]) + "vs" + str(player))
+
         move = self.translate_to_move(row, cols, ori)
         new_state[move] = player
 
@@ -140,7 +140,11 @@ class Board:
                     return True
         return False
 
-    def get_box_closer(self, state, moves):
+    def get_box_closer(self, state):
+        moves = self.legal_plays(state)
+        if moves.shape[0] == 0:
+            return None
+
         for move in moves:
             new_state = np.copy(state)
             new_state[move] = 1
@@ -150,56 +154,3 @@ class Board:
         move = random.choice(moves)
         r, c, o = self.translate_to_coord(move)
         return move, r, c, o
-
-    def get_greedy(self, states):
-        for state, move in states:
-            r, c, o = self.translate_to_coord(move)
-            if self.is_box(state, r, c, o):
-                return state, move
-        return random.choice(states)
-
-    def get_squares_open(self, state):
-        row = self.rows
-        cols = self.cols
-        total_squares = row * cols
-        squares = []
-        for x in range(total_squares):
-
-            square, count = self.get_square_values(x, cols, state)
-
-            if count == 3:
-                squares.append(x)
-        return squares
-
-    def get_square_values(self, square, cols, state):
-        x1 = square // cols
-        y = square % cols
-
-        index = x1 * (cols + cols + 1) + y
-
-        # print("Square:" + str(x+1))
-        # print("index:" + str(index))
-
-        list = []
-
-        value1 = state[index] != 0
-        value2 = state[index + cols] != 0
-        value3 = state[index + cols + 1] != 0
-        value4 = state[index + cols + cols + 1] != 0
-
-        list.append(value1)
-        list.append(value2)
-        list.append(value3)
-        list.append(value4)
-
-        square = []
-
-        count = 0
-        for ele in list:
-            if ele:
-                count += 1
-                square.append(True)
-            else:
-                square.append(False)
-
-        return square, count

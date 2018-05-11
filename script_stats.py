@@ -6,12 +6,12 @@ import sys
 import time
 
 # logger = logging.getLogger(__name__)
-filename = "stats.csv"
+# filename = "stats.csv"
 LOGGING = True
 timing = True
 
 def test_win_rate(rows, columns, timelimit, nb_games, ports):
-    f = open(filename, "w+")
+    f = open(str(ports[0]) + ".csv", "w+")
     f.write("timelimit,rows,columns,winner\n")
     f.close()
     print("  Expected game time: {}s".format(
@@ -26,7 +26,7 @@ def test_win_rate(rows, columns, timelimit, nb_games, ports):
                                           timelimit))
         if timing:
             print("    Time elapsed: {}s".format(time.time() - gametime))
-    stats = pandas.read_csv("stats.csv", delimiter=',')
+    stats = pandas.read_csv(str(ports[0]) + ".csv", delimiter=',')
 
     nb_games = stats.shape[0]
     nb_wins = stats[stats["winner"] == 1].shape[0]

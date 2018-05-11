@@ -25,8 +25,8 @@ import time
 logger = logging.getLogger(__name__)
 FILENAME = "stats.csv"
 
-def register_data(t,r,c,w):
-    with open(FILENAME, 'a', newline='') as csvfile:
+def register_data(agent1, t,r,c,w):
+    with open(agent1[-4:] + ".csv", 'a', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow([t, r, c, w])
     csvfile.close()
@@ -156,7 +156,7 @@ async def connect_agent(uri1, uri2, nb_rows, nb_cols, timelimit):
                     max(timings[i])))
 
     logger.info("Closed connections")
-    register_data(timelimit, nb_rows, nb_cols, winner)
+    register_data(uri1, timelimit, nb_rows, nb_cols, winner)
 
 
 def user_action(r, c, o, cur_player, cells, points, nb_rows, nb_cols):

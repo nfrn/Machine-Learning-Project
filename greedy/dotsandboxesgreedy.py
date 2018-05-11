@@ -62,7 +62,7 @@ class DotsAndBoxesAgent:
         self.nb_rows = nb_rows
         self.nb_cols = nb_cols
 
-        self.mcst = Mcst(Board(nb_rows, nb_cols), timelimit, weights, model)
+        self.mcst = Mcst(Board(nb_rows, nb_cols), timelimit)
 
     def add_player(self, player):
         """Use the same agent for multiple players."""
@@ -89,8 +89,7 @@ class DotsAndBoxesAgent:
         logger.info("Computing next move (grid={}x{}, player={})"\
                 .format(self.nb_rows, self.nb_cols, self.player))
 
-        result = self.mcst.search_move()
-        self.mcst.clear()
+        result = self.mcst.get_greedy_move()
         if result == -1:
             return None
         else:
@@ -205,28 +204,28 @@ def main(argv=None):
 
     logger.setLevel(max(logging.INFO - 10 * (args.verbose - args.quiet), logging.DEBUG))
     logger.addHandler(logging.StreamHandler(sys.stdout))
-    # print("Running agent with weights: " + str(args.weights))
+    print("Running agent with weights: " + str(args.weights))
 
-    global weights
-    # global cmm
-    # global ccm
-    # global cam
-    global model
-    print("Started loading models")
-    loadm1 = time.time()
-    # cmm = joblib.load(MAX_PREDICTOR_FILENAME)
-    model = joblib.load(MODEL)
-    loadm2 = time.time()
-    # ccm = joblib.load(COUNT_PREDICTOR_FILENAME)
-    # loadm3 = time.time()
-    # cam = joblib.load(AVG_PREDICTOR_FILENAME)
-    # loadm4 = time.time()
-    if timing:
-        print("model load time: {}".format(loadm2 - loadm1))
-        # print("Count chain model load time: {}".format(loadm3 - loadm2))
-        # print("Average chain model load time: {}".format(loadm4 - loadm3))
+    # global weights
+    # # global cmm
+    # # global ccm
+    # # global cam
+    # global model
+    # print("Started loading models")
+    # loadm1 = time.time()
+    # # cmm = joblib.load(MAX_PREDICTOR_FILENAME)
+    # model = joblib.load(MODEL)
+    # loadm2 = time.time()
+    # # ccm = joblib.load(COUNT_PREDICTOR_FILENAME)
+    # # loadm3 = time.time()
+    # # cam = joblib.load(AVG_PREDICTOR_FILENAME)
+    # # loadm4 = time.time()
+    # if timing:
+    #     print("model load time: {}".format(loadm2 - loadm1))
+    #     # print("Count chain model load time: {}".format(loadm3 - loadm2))
+    #     # print("Average chain model load time: {}".format(loadm4 - loadm3))
 
-    weights = args.weights
+    # weights = args.weights
     agentclass = DotsAndBoxesAgent
     start_server(args.port)
 

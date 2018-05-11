@@ -39,6 +39,7 @@ def generator(ports, mins, maxs, gpv, mint, maxt, runt, filename):
             time.sleep(5)
             wrate, drate = script_stats.test_win_rate(r, c, tl, gpv, ports)
             writer.writerow([r, c, tl, ncw, acw, mcw, wrate, drate])
+            csvfile.flush()
             proc2.kill()
 
             x += 1
@@ -50,9 +51,9 @@ def get_vars(min_size, max_size, min_time_limit, max_time_limit):
     rows = random.randint(min_size, max_size)
     cols = random.randint(min_size, max_size)
     time_limit = random.uniform(min_time_limit, max_time_limit)
-    nb_chain_weight = random.uniform(0.1, 2)
-    avg_chain_weight = random.uniform(0.1, 2)
-    max_chain_weight = random.uniform(0.1, 2)
+    nb_chain_weight = random.uniform(-2, 2)
+    avg_chain_weight = random.uniform(-2, 2)
+    max_chain_weight = random.uniform(-2, 2)
 
     return rows, cols, time_limit, nb_chain_weight, avg_chain_weight, max_chain_weight
 

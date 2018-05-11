@@ -44,8 +44,8 @@ class Mcst:
 
 
     def clear(self):
-        self.board = Board(self.board.rows, self.board.cols)
-        self.last_state = (1, self.board.init_representation())
+        # self.board = Board(self.board.rows, self.board.cols)
+        # self.last_state = (1, self.board.init_representation())
         self.next_states = []  # (MOVE, STATE)
         self.visited_states = []  # (MOVE, STATE)
 
@@ -54,6 +54,7 @@ class Mcst:
         simulated_games = 0
 
         current_state = self.last_state
+        print(current_state[1][0])
         possible_moves = self.board.legal_plays(current_state[1])
 
         self.next_states = self.expand_state(current_state[1])
@@ -65,15 +66,14 @@ class Mcst:
             return -1
 
         while time.time() - begin_time < self.time_limit * 0.9:
-            self.simulate_random_game(player1)
-            simulated_games += 1
-
-
+            self.simulate_random_game(player1, self.time_limit*0.9 +
+                                      begin_time - time.time())
+            # simulated_games += 1
 
         # print("Simulated games: " + str(simulated_games))
 
         state, move, r, c, o = self.get_best_move(self.next_states)
-        self.last_state = (move, state)
+        # self.last_state = (move, state)
         #print("Diference: {}".format((time.time() - begin_time)-self.time_limit))
         return r.item(), c.item(), o
 
@@ -110,31 +110,31 @@ class Mcst:
                     best_move = move
                     best_state = state
         # print("Time to pick best move: {}".format(time.time() - begin))
-        # print("Picked move " + str(best_move) + " with win rate of " + str(best_win))
+        print("Picked move " + str(best_move) + " with win rate of " + str(best_win))
         r, c, o = self.board.translate_to_coord(best_move)
         return best_state, best_move, r, c, o
 
-    def simulate_random_game(self, player1):
-        init1 = time.time()
+    def simulate_random_game(self, player1, time_limit):
+        finish = time.time()
+        # print("Simulation time: " + str(time_limit))
+        # if time_limit < 0:
+        #     print("Stopping")
+        #     return
+        # init1 = time.time()
         state, move = self.uct_selection(self.next_states)
-        init2 = time.time()
+        # init2 = time.time()
         player = self.board.current_player(state)
-        init3 = time.time()
+        # init3 = time.time()
         states_simulated = list()
-        init4 = time.time()
+        # init4 = time.time()
         states_simulated.append((player, hashable(state)))
-        init5 = time.time()
+        # init5 = time.time()
         state_copy = np.copy(state)
         # print("Time to init board: {}".format(init5 - init1))
-        t = init2 - init1
-        # if t > 0.1:
-        # print("Time to init uct: {}".format(init2 - init1))
-        # print("Time to set player: {}".format(init3 - init2))
-        # print("Time to make list: {}".format(init4 - init3))
-        # print("Time to append to list: {}".format(init5 - init4))
+        # t = init2 - init1
 
-        finish = time.time()
-        while not self.board.is_finished(state_copy):
+        while not self.board.is_finished(state_copy) \
+                and ((time.time() - finish) < time_limit):
 
             next_states = self.expand_state(state_copy)
 
@@ -145,16 +145,19 @@ class Mcst:
             state_hash = hashable(state_copy)
             new_player = self.board.current_player(state_copy)
             states_simulated.append((new_player, state_hash))
-        finished = time.time()
+        # finished = time.time()
         # print("Time to finish board: {}".format(finished-finish))
-        winner = self.board.winner(state_copy)
-        # EXTRA
 
-        for player, hash_state in states_simulated:
-            self.plays[(player, hash_state)] += 1
-            if player1 == winner:
-                self.wins[(player, hash_state)] += 1
-        # print("Time to update tree: {}".format(time.time() - finished))
+        if self.board.is_finished(state_copy):
+            winner = self.board.winner(state_copy)
+            # print(winner)
+            # EXTRA
+
+            for player, hash_state in states_simulated:
+                self.plays[(player, hash_state)] += 1
+                if player1 == winner:
+                    self.wins[(player, hash_state)] += 1
+            # print("Time to update tree: {}".format(time.time() - finished))
 
     def register_other_player_move(self, row, col, ori, player):
         new_state, new_move = self.board.register_state(self.last_state[1],
@@ -175,7 +178,8 @@ class Mcst:
         # print("Time to make list: {}".format(init2 - init1))
 
         if len(list_not_played) > 0:
-            return choice(list_not_played)
+            # return choice(list_not_played)
+            return self.board.get_greedy(list_not_played)
 
         init3 = time.time()
         # print("Time to make random choice from unplayed: {}".format(init3 - init2))
@@ -189,7 +193,8 @@ class Mcst:
               self.plays[(b.current_player(S), hashable(S))]) +
              1.4 * math.sqrt(float(log_total) /
                              self.plays[(b.current_player(S), hashable(S))])
-             + self.get_prediction_value(S[1:], b.rows, b.cols)
+             # + self.get_prediction_value(S[1:], b.rows, b.cols)
+             # - len(self.board.get_squares_open(S[1:]))*0.5
              , p, S)
             for p, S in states)
 
