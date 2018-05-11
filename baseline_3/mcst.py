@@ -82,10 +82,11 @@ class Mcst:
         moves = self.board.legal_plays(current_state)
         for move in moves:
             new_state = self.board.next_state(current_state, move)
+            
             next_states.append((move, new_state))
-
             player = self.board.current_player(new_state)
-            hash_state = hashable(new_state)
+            
+            hash_state = new_state[1:].tobytes()
 
             if(player, hash_state) not in self.plays.keys():
                 self.plays[(player, hash_state)] = 0
@@ -96,14 +97,17 @@ class Mcst:
     def get_best_move(self, next_states):
 
         best_win = 0
-        best_move, best_state = choice(next_states)
+        if self.get_greedy_move() != -1:
+            best_move, best_state = self.get_greedy_move()
+        else:
+            best_move, best_state = choice(next_states)
         # begin = time.time()
         for move, state in next_states:
             plays = self.plays.get((self.board.current_player(state),
-                                    hashable(state)), 1)
+                                    state[1:].tobytes()), 1)
             if plays != 0:
                 wins = self.wins.get((self.board.current_player(state),
-                                      hashable(state)), 0)
+                                      state[1:].tobytes()), 0)
                 win = float(wins)/plays
                 if win > best_win:
                     best_win = win
@@ -127,7 +131,7 @@ class Mcst:
         # init3 = time.time()
         states_simulated = list()
         # init4 = time.time()
-        states_simulated.append((player, hashable(state)))
+        states_simulated.append((player, state[1:].tobytes()))
         # init5 = time.time()
         state_copy = np.copy(state)
         # print("Time to init board: {}".format(init5 - init1))
@@ -142,7 +146,7 @@ class Mcst:
             state_copy, move = self.uct_selection(next_states)
             # print("UCT Time: {}".format(time.time()-uct))
 
-            state_hash = hashable(state_copy)
+            state_hash = state_copy[1:].tobytes()
             new_player = self.board.current_player(state_copy)
             states_simulated.append((new_player, state_hash))
         # finished = time.time()
@@ -171,7 +175,7 @@ class Mcst:
         list_not_played = []
         # TODO niet uitvoeren als alle next states al gevisit zijn.
         for move, state in states:
-            if self.plays[(b.current_player(state), hashable(state))] == 0:
+            if self.plays[(b.current_player(state), state[1:].tobytes())] == 0:
                 list_not_played.append((state, move))
 
         init2 = time.time()
@@ -179,20 +183,20 @@ class Mcst:
 
         if len(list_not_played) > 0:
             # return choice(list_not_played)
-            return self.board.get_greedy(list_not_played)
+            return choice(list_not_played)
 
         init3 = time.time()
         # print("Time to make random choice from unplayed: {}".format(init3 - init2))
 
         log_total = math.log(
-            sum(self.plays[(b.current_player(S), hashable(S))]
+            sum(self.plays[(b.current_player(S), S[1:].tobytes())]
                 for p, S in states))
 
         value, move, state = max(
-            ((float(self.wins[(b.current_player(S), hashable(S))]) /
-              self.plays[(b.current_player(S), hashable(S))]) +
+            ((float(self.wins[(b.current_player(S), S[1:].tobytes())]) /
+              self.plays[(b.current_player(S), S[1:].tobytes())]) +
              1.4 * math.sqrt(float(log_total) /
-                             self.plays[(b.current_player(S), hashable(S))])
+                             self.plays[(b.current_player(S), S[1:].tobytes())])
              # + self.get_prediction_value(S[1:], b.rows, b.cols)
              # - len(self.board.get_squares_open(S[1:]))*0.5
              , p, S)
@@ -216,6 +220,13 @@ class Mcst:
                list[1] * w[1] + \
                list[2] * w[2]
 
+    def get_greedy_move(self):
+        move, r, c, o = self.board.get_box_closer(self.last_state[1])
+        if move is None:
+            return -1
+
+        return (move, self.board.next_state(self.last_state[1], move))
+
 
 # TODO might get done more efficient by keeping a converted state as well.
 def convert_state(state, cols):
@@ -227,6 +238,11 @@ def convert_state(state, cols):
         number += row*col
     return number
 
+def simplity_state(state):
+    for x in range(len(state)):
+        if x>0:
+            state[x]=1
+    return state[1:]
 
 def translate_to_coord(cols, move):
     move2 = move - 1

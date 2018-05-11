@@ -2,6 +2,7 @@ import numpy as np
 from hashlib import sha1
 from numpy import all, array, uint8
 import collections
+import random
 
 class hashable(object):
 
@@ -127,14 +128,29 @@ class Board:
             if row < self.rows:
                 if new_state.item(move + cols) > 0 and new_state.item(move + cols + 1) > 0 and new_state.item(move + (2 * cols) + 1) > 0:
                     return True
-            if row > 1:
+            if row > 0:
                 if new_state.item(move - cols) > 0 and new_state.item(move - cols - 1) > 0 and new_state.item(move - (2 * cols) - 1) > 0:
                     return True
         elif ori == "v":
             if col < self.cols:
                 if new_state.item(move + 1) > 0 and new_state.item(move - cols) > 0 and new_state.item(move + cols + 1) > 0:
                     return True
-            if col > 1:
+            if col > 0:
                 if new_state.item(move - 1) > 0 and new_state.item(move + cols) > 0 and new_state.item(move - cols - 1) > 0:
                     return True
         return False
+
+    def get_box_closer(self, state):
+        moves = self.legal_plays(state)
+        if moves.shape[0] == 0:
+            return None
+
+        for move in moves:
+            new_state = np.copy(state)
+            new_state[move] = 1
+            r, c, o = self.translate_to_coord(move)
+            if self.is_box(new_state, r, c, o):
+                return move, r, c, o
+        move = random.choice(moves)
+        r, c, o = self.translate_to_coord(move)
+        return move, r, c, o
