@@ -120,7 +120,7 @@ async def handler(websocket, path):
                 if msg["player"] == 1:
                     # Start the game
                     nm = games[game].next_action()
-                    print('nm = {}'.format(nm))
+                    # print('nm = {}'.format(nm))
                     if nm is None:
                         # Game over
                         logger.info("Game over")
@@ -164,7 +164,7 @@ async def handler(websocket, path):
                 logger.error("Unknown message type:\n{}".format(msg))
 
             if answer is not None:
-                print(answer)
+                # print(answer)
                 await websocket.send(json.dumps(answer))
                 logger.info("> {}".format(answer))
     except websockets.exceptions.ConnectionClosed as err:
@@ -174,7 +174,7 @@ async def handler(websocket, path):
 
 def start_server(port):
     server = websockets.serve(handler, 'localhost', port)
-    print("Running on ws://127.0.0.1:{}".format(port))
+    # print("Running on ws://127.0.0.1:{}".format(port))
     asyncio.get_event_loop().run_until_complete(server)
     asyncio.get_event_loop().run_forever()
 

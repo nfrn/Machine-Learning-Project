@@ -1,20 +1,10 @@
 import pandas as pd
-import numpy as np
-import scipy
-import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
-from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.svm import SVR
 from sklearn.externals import joblib
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score
-from scipy.stats import spearmanr, pearsonr
 import time
-from sklearn import metrics
 
 
 # Data =
@@ -33,11 +23,17 @@ if __name__ == "__main__":
     target = [3,4,5]
 
     scaler = StandardScaler().fit(train[columns_1])
-    X_train_scaled = pd.DataFrame(scaler.transform(train[columns_1]), index=train[columns_1].index.values, columns=train[columns_1].columns.values)
-    X_test_scaled = pd.DataFrame(scaler.transform(test[columns_1]), index=test[columns_1].index.values, columns=test[columns_1].columns.values)
+    X_train_scaled = pd.DataFrame(scaler.transform(train[columns_1]),
+                                  index=train[columns_1].index.values,
+                                  columns=train[columns_1].columns.values)
+    X_test_scaled = pd.DataFrame(scaler.transform(test[columns_1]),
+                                 index=test[columns_1].index.values,
+                                 columns=test[columns_1].columns.values)
 
 
-    model1 = RandomForestRegressor(n_estimators=100,bootstrap=True, max_depth=40,min_samples_leaf=4,min_samples_split=5)
+    model1 = RandomForestRegressor(n_estimators=10,bootstrap=True,
+                                   max_depth=40,min_samples_leaf=4,
+                                   min_samples_split=5)
 
     model1.fit(train[columns_1], train[target])
 

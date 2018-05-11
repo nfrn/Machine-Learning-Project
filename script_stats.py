@@ -10,7 +10,7 @@ filename = "stats.csv"
 LOGGING = True
 timing = True
 
-def test_win_rate(rows, columns, timelimit, nb_games):
+def test_win_rate(rows, columns, timelimit, nb_games, ports):
     f = open(filename, "w+")
     f.write("timelimit,rows,columns,winner\n")
     f.close()
@@ -20,9 +20,10 @@ def test_win_rate(rows, columns, timelimit, nb_games):
         gametime = time.time()
         if LOGGING:
             print("  Running game: " + str(x + 1))
-        os.system('python dotsandboxescompete.py ws://127.0.0.1:8084 '
-                  'ws://127.0.0.1:8085 -q --rows {} --cols {} '
-                  '--timelimit {}'.format(rows, columns, timelimit))
+        os.system('python dotsandboxescompete.py ws://127.0.0.1:{} '
+                  'ws://127.0.0.1:{} -q --rows {} --cols {} '
+                  '--timelimit {}'.format(ports[0], ports[1], rows, columns,
+                                          timelimit))
         if timing:
             print("    Time elapsed: {}s".format(time.time() - gametime))
     stats = pandas.read_csv("stats.csv", delimiter=',')

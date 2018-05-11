@@ -221,7 +221,7 @@ def main(argv=None):
     # cam = joblib.load(AVG_PREDICTOR_FILENAME)
     # loadm4 = time.time()
     if timing:
-        # print("Max chain model load time: {}".format(loadm2 - loadm1))
+        print("model load time: {}".format(loadm2 - loadm1))
         # print("Count chain model load time: {}".format(loadm3 - loadm2))
         # print("Average chain model load time: {}".format(loadm4 - loadm3))
 

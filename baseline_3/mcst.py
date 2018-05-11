@@ -197,19 +197,19 @@ class Mcst:
         return state, move
 
     def get_prediction_value(self, state, r, c):
-        begin = time.time()
+        # begin = time.time()
         cstate = convert_state(state, c)
-        convert = time.time()
-        ccpred, avgpred, maxpred = self.model.predict([[cstate, r, c]])
+        # convert = time.time()
+        [list] = self.model.predict([[cstate, r, c]])
         #print("Time to convert state: {}".format(convert-begin))
         # ccpred = self.chain_count_model.predict([[cstate, r, c]])
         # avgpred = self.chain_avg_model.predict([[cstate, r, c, ccpred]])
         # maxpred = self.chain_max_model.predict([[cstate, r, c, ccpred, avgpred]])
-        print("Time to get predictions: {}".format(time.time() - convert))
+        # print("Time to get predictions: {}".format(time.time() - convert))
         w = self.weights
-        return ccpred * w[0] + \
-               avgpred * w[1] + \
-               maxpred * w[2]
+        return list[0] * w[0] + \
+               list[1] * w[1] + \
+               list[2] * w[2]
 
 
 # TODO might get done more efficient by keeping a converted state as well.
